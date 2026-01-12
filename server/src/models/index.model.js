@@ -7,7 +7,6 @@ import UserAsset from "./UserAsset.model.js";
 import Expenses from "./Expenses.model.js";
 import Account from "./Account.model.js";
 
-
 User.hasMany(UserIP, { foreignKey: "userId" });
 UserIP.belongsTo(User, { foreignKey: "userId" });
 
@@ -44,14 +43,11 @@ UserAsset.belongsTo(Asset, {
   onUpdate: "CASCADE",
 });
 
-
-
 User.hasMany(Expenses, { foreignKey: "userId" });
 Expenses.belongsTo(User, { foreignKey: "userId", as: "employee" });
 
 User.hasMany(Expenses, { foreignKey: "reviewedBy" });
-Expenses.belongsTo(User, { foreignKey: "reviewededBy", as: "reviewer" });
-
+Expenses.belongsTo(User, { foreignKey: "reviewedBy", as: "reviewer" });
 
 User.hasOne(Account, {
   foreignKey: "userId",
@@ -62,6 +58,7 @@ Account.belongsTo(User, {
   foreignKey: "userId",
 });
 
-
+User.hasMany(User, { as: "workers", foreignKey: "managerId" });
+User.belongsTo(User, { as: "manager", foreignKey: "managerId" });
 
 export { User, OTP, UserIP, AssetRequest, Asset, UserAsset, Account, Expenses };

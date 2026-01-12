@@ -33,6 +33,9 @@ export default function UserExpensePage() {
   const [hasAccount, setHasAccount] = useState(true);
   const [openRegisterForm, setOpenRegisterForm] = useState(false);
 
+  const [openPreview, setOpenPreview] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
+
   const [accountForm, setAccountForm] = useState({
     email: "",
     pin: "",
@@ -190,14 +193,15 @@ export default function UserExpensePage() {
 
                     <TableCell>
                       {exp.receiptUrl ? (
-                        <a
-                          href={exp.receiptUrl}
-                          target="_blank"
-                          rel="noreferrer"
+                        <button
                           className="text-blue-600 underline"
+                          onClick={() => {
+                            setPreviewUrl(exp.receiptUrl);
+                            setOpenPreview(true);
+                          }}
                         >
                           View
-                        </a>
+                        </button>
                       ) : (
                         "-"
                       )}
@@ -360,6 +364,34 @@ export default function UserExpensePage() {
               >
                 Register
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+      {openPreview && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
+          <div className="bg-white w-full max-w-3xl h-[85vh] rounded-xl shadow-lg flex flex-col">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="font-semibold text-lg">Receipt -</h2>
+              <button
+                className="text-red-500 font-semibold"
+                onClick={() => {
+                  setOpenPreview(false);
+                  setPreviewUrl(null);
+                }}
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="flex-1 p-2">
+              {previewUrl && (
+                <iframe
+                  src={previewUrl}
+                  title="Receipt Preview"
+                  className="w-full h-full rounded-md border"
+                />
+              )}
             </div>
           </div>
         </div>

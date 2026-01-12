@@ -33,6 +33,9 @@ export default function AdminUserPage() {
       }
 
       setUserData(response.data.data.data);
+
+      console.log(response.data.data.data);
+
       setTotalPages(response.totalPages);
     } catch (error) {
       console.error(error);
@@ -81,7 +84,6 @@ export default function AdminUserPage() {
   };
   useEffect(() => {
     fetchUser();
-    console.log(user);
   }, [getUser]);
 
   const handleLogIn = async () => {
@@ -101,23 +103,24 @@ export default function AdminUserPage() {
           </h1>
 
           <div className="bg-white rounded-xl border shadow-sm overflow-hidden">
-            <div className="grid grid-cols-6 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700">
+            <div className="grid grid-cols-7 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700">
               <span>S.No</span>
               <span>Email</span>
               <span>Role</span>
               <span>Status</span>
               <span>Blocked</span>
+              <span>Manager</span>
               <span className="text-center">User Action</span>
             </div>
 
             {userData.map((user, index) => (
               <div
                 key={user.id}
-                className="grid grid-cols-6 px-4 py-3 text-sm text-gray-700 border-t hover:bg-gray-50 transition"
+                className="grid grid-cols-7 px-4 py-3 text-sm text-gray-700 border-t hover:bg-gray-50 transition"
               >
                 <span className="font-medium">{index + 1}</span>
 
-                <span className="truncate">{user.email}</span>
+                <span className="truncate">{user.email?.split("@")[0]}</span>
 
                 <span>
                   <span
@@ -140,6 +143,10 @@ export default function AdminUserPage() {
                 </span>
 
                 <span>{user.isBlocked ? "Yes" : "No"}</span>
+
+                <span className="text-xs text-gray-600 break-all">
+                  {user.manager?.first_name || "Manager Not Assigned"}
+                </span>
 
                 <div className="flex justify-center">
                   {user.isBlocked ? (

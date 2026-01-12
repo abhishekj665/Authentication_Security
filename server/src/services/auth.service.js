@@ -62,7 +62,7 @@ export const logInService = async ({ email, password }) => {
 
   const valid = await bcrypt.compare(password, user.password);
   if (!valid) {
-    throw new ExpressError(401, "Invalid credentials");
+    throw new ExpressError(401, "Invalid Password");
   }
 
   const token = jwtSign(user.id, user.role);

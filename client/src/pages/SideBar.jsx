@@ -1,9 +1,9 @@
 import { NavLink } from "react-router-dom";
-import DashboardIcon from "@mui/icons-material/Dashboard";
 import PersonIcon from "@mui/icons-material/Person";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import PermDataSettingOutlinedIcon from "@mui/icons-material/PermDataSettingOutlined";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
+import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
 
 export default function Sidebar() {
   const linkClass = ({ isActive }) =>
@@ -32,7 +32,11 @@ export default function Sidebar() {
         </NavLink>
 
         <NavLink to="/admin/expenses" className={linkClass}>
-          <CurrencyExchangeIcon /> Expenses
+          <CurrencyExchangeIcon /> Expense Requests
+        </NavLink>
+
+        <NavLink to="/admin/manager" className={linkClass}>
+          <ManageAccountsIcon /> Managers
         </NavLink>
       </nav>
     </aside>

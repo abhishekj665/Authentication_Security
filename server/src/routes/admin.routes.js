@@ -8,6 +8,7 @@ import * as adminUserController from "../controllers/admin/user.controller.js";
 import * as adminRequestController from "../controllers/admin/request.controller.js";
 import * as adminAssetController from "../controllers/admin/asset.controller.js";
 import * as adminExpenseController from "../controllers/admin/expenses.controller.js";
+import * as adminManagerController from "../controllers/admin/manager.controller.js";
 
 Router.use(auth);
 
@@ -32,8 +33,17 @@ Router.delete("/asset/:id", adminAssetController.deleteAsset);
 Router.put("/asset/:id", adminAssetController.updateAsset);
 
 Router.get("/expense", adminExpenseController.getAllExpense);
-Router.put("/expense/approve/:id", adminExpenseController.approveExpenseRequest)
-Router.put("/expense/reject/:id", adminExpenseController.rejectExpenseRequest)
+Router.put(
+  "/expense/approve/:id",
+  adminExpenseController.approveExpenseRequest
+);
+Router.put("/expense/reject/:id", adminExpenseController.rejectExpenseRequest);
+
+Router.get("/manager", adminManagerController.getAllManagersData);
+
+Router.get("/manager/users", adminManagerController.getManagersWithUsers);
+Router.post("/manager/register", adminManagerController.registerManager);
+Router.patch("/manager/assign", adminManagerController.assignWorkersToManager);
 
 Router.get("", (req, res) => {
   res.status(404).json({ message: "Admin route not found" });

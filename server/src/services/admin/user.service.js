@@ -13,8 +13,13 @@ export const getUsersService = async (page, limits) => {
       attributes: { exclude: ["password"] },
       include: [
         {
+          model: User,
+          as: "manager",
+          attributes: ["id", "email", "first_name", "last_name"],
+        },
+        {
           model: UserIP,
-          required: false,
+          required: true,
           attributes: ["ipAddress", "isBlocked", "createdAt", "updatedAt"],
         },
       ],

@@ -1,0 +1,118 @@
+import ExpressError from "../../utils/Error.utils.js";
+import STATUS from "../../config/constants/Status.js";
+import { User } from "../../models/index.model.js";
+import { generateHash } from "../../utils/generateHash.utils.js";
+import sequelize from "../../config/db.js";
+import { successResponse } from "../../utils/response.utils.js";
+
+export const getAllManagers = async () => {
+  try {
+    let managerData = await User.findAll({ where: { role: "manager" } });
+
+    if (!managerData) {
+      return {
+        success: false,
+        message: "Manager Data Not Found",
+      };
+    }
+
+    return {
+      success: true,
+      data: managerData,
+      message: "Manager Data Fetched Successfully",
+    };
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+export const registerManagerService = async (data) => {
+  try {
+    let { email, password } = data;
+
+    let hashedPassword = await generateHash(password);
+
+    const managerData = await User.create({
+      first_name: data.first_name || "Manager2",
+      last_name: data.last_name || "",
+      email,
+      contact: data.contact || 0,
+      password: hashedPassword,
+      role: "manager",
+    });
+
+    return {
+      success: true,
+      data: managerData,
+      message: "Message Register Successfully",
+    };
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+export const assignWorkersToManagerService = async ({
+  managerId,
+  workerIds,
+}) => {
+  const transaction = await sequelize.transaction();
+
+  try {
+    if (!managerId || !workerIds?.length) {
+      throw new ExpressError(400, "ManagerId and workerIds are required");
+    }
+
+    const manager = await User.findOne({
+      where: { id: managerId, role: "manager" },
+      transaction,
+    });
+
+    if (!manager) {
+      throw new ExpressError(404, "Manager not found");
+    }
+
+    const workers = await User.findAll({
+      where: { id: workerIds, role: "user" },
+      transaction,
+    });
+
+    if (workers.length !== workerIds.length) {
+      throw new ExpressError(400, "One or more workers are invalid");
+    }
+
+    await User.update({ managerId }, { where: { id: workerIds }, transaction });
+
+    await transaction.commit();
+
+    return {
+      success: true,
+      message: "Workers assigned to manager successfully",
+    };
+  } catch (error) {
+    await transaction.rollback();
+    throw error;
+  }
+};
+
+
+
+
+export const getManagersWithUsersService = async () => {
+  const managers = await User.findAll({
+    where: { role: "manager" },
+    attributes: ["id", "email", "first_name", "last_name"],
+    include: [
+      {
+        model: User,
+        as: "workers",
+        attributes: ["id", "email", "first_name", "last_name"],
+      },
+    ],
+  });
+
+  return {
+    success: true,
+    data: managers,
+  };
+};
+

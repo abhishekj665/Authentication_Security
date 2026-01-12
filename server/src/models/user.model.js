@@ -11,6 +11,10 @@ const User = sequelize.define(
       allowNull: false,
       defaultValue: DataTypes.UUIDV4,
     },
+    managerId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
     first_name: {
       type: DataTypes.STRING,
       allowNull: false,
@@ -27,7 +31,7 @@ const User = sequelize.define(
       defaultValue: "",
     },
     role: {
-      type: DataTypes.ENUM("user", "admin"),
+      type: DataTypes.ENUM("user", "admin", "manager"),
       allowNull: false,
       defaultValue: "user",
     },
@@ -44,7 +48,7 @@ const User = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
-    isBlocked : {
+    isBlocked: {
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },

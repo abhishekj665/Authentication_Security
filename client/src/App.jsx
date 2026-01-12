@@ -11,6 +11,7 @@ import AdminIps from "./pages/AdminIp";
 import UserAssetPage from "./pages/UserAssetPage";
 import AdminRequest from "./pages/AdminRequest";
 import ExpensesPage from "./pages/ExpensesPage";
+import ManagerPage from "./pages/AdminManagerPage";
 
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
@@ -38,6 +39,7 @@ function App() {
             <Route path="requests" element={<AdminRequest />} />
             <Route path="asset" element={<AdminAsset />} />
             <Route path="expenses" element={<ExpensesPage />} />
+            <Route path="manager" element={<ManagerPage />} />
           </Route>
 
           <Route path="/" element={<SignUpPage />}></Route>

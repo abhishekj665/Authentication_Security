@@ -36,6 +36,9 @@ const ExpensesPage = () => {
   const [rejectId, setRejectId] = useState(null);
   const [remark, setRemark] = useState("");
 
+  const [openPreview, setOpenPreview] = useState(false);
+  const [previewUrl, setPreviewUrl] = useState(null);
+
   const role = user?.role;
 
   const fetchExpenses = async () => {
@@ -62,12 +65,8 @@ const ExpensesPage = () => {
     const isConfirmed = window.confirm("Reject this expense?");
     if (!isConfirmed) return;
 
-    
-
     setOpenRejectBox(false);
     setRemark("");
-
-    
 
     await rejectExpense(id, remark);
     toast.success("Expense rejected");
@@ -127,14 +126,15 @@ const ExpensesPage = () => {
 
                 <TableCell>
                   {exp.receiptUrl ? (
-                    <a
-                      href={exp.receiptUrl}
-                      target="_blank"
-                      rel="noreferrer"
+                    <button
                       className="text-blue-600 underline"
+                      onClick={() => {
+                        setPreviewUrl(exp.receiptUrl);
+                        setOpenPreview(true);
+                      }}
                     >
                       View
-                    </a>
+                    </button>
                   ) : (
                     "-"
                   )}
@@ -176,7 +176,7 @@ const ExpensesPage = () => {
         </Table>
       </TableContainer>
 
-      {/* Reject Modal */}
+      
       {openRejectBox && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
           <div className="bg-white w-full max-w-md rounded-xl p-6 shadow-lg">
@@ -213,6 +213,34 @@ const ExpensesPage = () => {
               >
                 Reject
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {openPreview && (
+        <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
+          <div className="bg-white w-full max-w-3xl h-[85vh] rounded-xl shadow-lg flex flex-col">
+            <div className="flex justify-between items-center p-4 border-b">
+              <h2 className="font-semibold text-lg">Receipt -</h2>
+              <button
+                className="text-red-500 font-semibold"
+                onClick={() => {
+                  setOpenPreview(false);
+                  setPreviewUrl(null);
+                }}
+              >
+                Close
+              </button>
+            </div>
+
+            <div className="flex-1 p-2">
+              {previewUrl && (
+                <iframe
+                  src={previewUrl}
+                  title="Receipt Preview"
+                  className="w-full h-full rounded-md border"
+                />
+              )}
             </div>
           </div>
         </div>
