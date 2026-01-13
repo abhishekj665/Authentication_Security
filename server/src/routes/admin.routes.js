@@ -17,6 +17,7 @@ Router.get("/request", adminRequestController.getRequestData);
 Router.use(adminAuth);
 
 Router.get("/users", adminUserController.getUsers);
+Router.post("/user/register", adminUserController.registerUser);
 
 Router.put("/block", adminUserController.blockIPController);
 Router.put("/unblock", adminUserController.unblockIPController);

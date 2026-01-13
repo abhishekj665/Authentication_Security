@@ -2,7 +2,19 @@ import { successResponse, errorResponse } from "../../utils/response.utils.js";
 import STATUS from "../../config/constants/Status.js";
 import * as userServices from "../../services/admin/user.service.js";
 
+export const registerUser = async (req, res, next) => {
+  try {
+    let response = await userServices.registerUserService(req.body);
 
+    if (response.success) {
+      return successResponse(res, response.data, response.message);
+    } else {
+      return errorResponse(res, response.message);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const blockUserController = async (req, res, next) => {
   try {
@@ -63,7 +75,6 @@ export const unblockIPController = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const getUsers = async (req, res, next) => {
   try {

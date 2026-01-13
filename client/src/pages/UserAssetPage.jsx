@@ -146,7 +146,7 @@ export default function UserAssetPage() {
                   <TableCell>Created At</TableCell>
                   <TableCell>Updated At</TableCell>
                   <TableCell>Asset Status</TableCell>
-                  <TableCell>Admin Mark</TableCell>
+                  <TableCell>Remark</TableCell>
                 </TableRow>
               </TableHead>
 

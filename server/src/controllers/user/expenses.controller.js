@@ -30,7 +30,7 @@ export const createNewExpense = async (req, res, next) => {
   try {
     let receiptUrl = null;
 
-    console.log(req.file);
+    
 
     if (req.file) {
       try {
@@ -51,8 +51,10 @@ export const createNewExpense = async (req, res, next) => {
     );
 
     if (response.success) {
+      io.to("manager").emit("expenseCreated");
       io.to("admin").emit("expenseCreated");
       io.to(`user:${req.user.id}`).emit("expenseCreated");
+
       return successResponse(res, response.data, response.message);
     } else {
       return errorResponse(res, response.message);
@@ -70,6 +72,10 @@ export const updateExpense = async (req, res, next) => {
     );
 
     if (response.success) {
+      io.to("manager").emit("expenseUpdated", {
+        message: "Expense updated",
+      });
+
       io.to("admin").emit("expenseUpdated", {
         message: "Expense updated",
       });

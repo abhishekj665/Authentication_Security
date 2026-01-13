@@ -11,19 +11,16 @@ import sequelize from "../../config/db.js";
 export const getRequestDataService = async () => {
   try {
     const requests = await AssetRequest.findAll({
-      order: [["createdAt", "DESC"]],
-      include: [
-        {
-          model: User,
-          attributes: ["email", "role"],
-        },
-        {
-          model: Asset,
-          attributes: ["id", "title", "price", "status", "availableQuantity"],
-        },
-      ],
-    });
+  order: [["createdAt", "DESC"]],
+  include: [
+    { model: User, attributes: ["email", "role"] },       
+    { model: Asset, attributes: ["id","title","price","status","availableQuantity"] },
+    { model: User, as: "reviewer", attributes: ["id","email","role"] } 
+  ],
+});
 
+
+    
     return {
       success: true,
       message: "Requests fetched successfully",
@@ -34,7 +31,7 @@ export const getRequestDataService = async () => {
   }
 };
 
-export const rejectRequestService = async (id, remark) => {
+export const rejectRequestService = async (id, remark, manager) => {
   const request = await AssetRequest.findByPk(id);
 
   if (!request || request.status !== "pending") {
@@ -43,6 +40,7 @@ export const rejectRequestService = async (id, remark) => {
 
   request.status = "rejected";
   request.adminRemark = remark;
+  request.reviewedBy = manager.id;
   await request.save();
 
   return {
@@ -52,7 +50,7 @@ export const rejectRequestService = async (id, remark) => {
   };
 };
 
-export const approveRequestService = async (id, admin) => {
+export const approveRequestService = async (id, manager) => {
   const t = await sequelize.transaction();
 
   try {
@@ -100,7 +98,8 @@ export const approveRequestService = async (id, admin) => {
     );
 
     request.status = "approved";
-    request.adminRemark = `Approved by ${admin}`;
+    request.adminRemark = `Approved by ${manager.role}`;
+    request.reviewedBy = manager.id;
     await request.save({ transaction: t });
 
     await t.commit();
@@ -113,4 +112,27 @@ export const approveRequestService = async (id, admin) => {
     await t.rollback();
     throw error;
   }
+};
+
+export const createAssetRequestService = async (data, user) => {
+  const { assetId, quantity, description } = data;
+  const userId = user.id;
+
+  if (!assetId || !quantity) {
+    throw new ExpressError(400, "assetId and quantity are required");
+  }
+
+  const asset = await Asset.findByPk(assetId);
+
+  if (!asset) throw new ExpressError(404, "Asset not found");
+
+  await AssetRequest.create({
+    userId,
+    assetId,
+    title: asset.title,
+    quantity,
+    description,
+  });
+
+  return { success: true, message: "Asset request created successfully" };
 };

@@ -6,6 +6,8 @@ import { userRouter } from "./routes/users.routes.js";
 import { globalErrorHandler } from "./middlewares/error.midlleware.js";
 import { expensesRouter } from "./routes/expenses.routes.js";
 import { accountRouter } from "./routes/account.routes.js";
+import { managerRouter } from "./routes/manager.routes.js";
+
 import cors from "cors";
 import path from "path";
 
@@ -27,6 +29,7 @@ app.use(cookieParser());
 app.use("/users", userRouter);
 app.use("/auth", authRouter);
 app.use("/admin", adminRouter);
+app.use("/manager",managerRouter)
 app.use("/expenses", expensesRouter);
 app.use("/account", accountRouter)
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));

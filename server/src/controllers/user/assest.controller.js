@@ -16,11 +16,17 @@ export const createAssetRequest = async (req, res, next) => {
     );
 
     if (response.success) {
-      io.to("admin").emit("requestCreated", {
-        message: "New request created",
-      });
-      return successResponse(res, response, response.message, STATUS.CREATED);
-    } else {
+  io.to("manager").emit("requestCreated", {
+    message: "New request created",
+  });
+
+  io.to("admin").emit("requestCreated", {
+    message: "New request created",
+  });
+
+  return successResponse(res, response, response.message, STATUS.CREATED);
+}
+ else {
       return errorResponse(res, response.message, STATUS.BAD_REQUEST);
     }
   } catch (error) {

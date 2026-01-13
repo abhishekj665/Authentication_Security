@@ -8,12 +8,16 @@ import {
   Paper,
   Button,
   Chip,
+  TextField,
 } from "@mui/material";
 
+import { Autocomplete } from "@mui/material";
+import { createAssetRequest } from "../services/managerService";
+
 import { useState, useEffect } from "react";
-import { getRequestData } from "../services/adminService";
+import { getRequestData, getAssetInfo } from "../services/managerService";
 import { toast } from "react-toastify";
-import { approveRequest, rejectRequest } from "../services/adminService";
+import { approveRequest, rejectRequest } from "../services/managerService";
 
 import { useSelector } from "react-redux";
 
@@ -25,7 +29,7 @@ const statusColor = (status) => {
   return "warning";
 };
 
-const AdminRequest = () => {
+const ManagerRequest = () => {
   const [requestData, setRequestsData] = useState([]);
 
   const { user, isAuthenticated, loading } = useSelector((state) => state.auth);
@@ -33,6 +37,16 @@ const AdminRequest = () => {
   const [openRejectBox, setOpenRejectBox] = useState(false);
   const [rejectId, setRejectId] = useState(null);
   const [remark, setRemark] = useState("");
+
+  const [openForm, setOpenForm] = useState(false);
+
+  const [assets, setAssets] = useState([]);
+
+  const [formData, setFormData] = useState({
+    assetId: "",
+    description: "",
+    title: "",
+  });
 
   const role = user.role;
 
@@ -76,29 +90,78 @@ const AdminRequest = () => {
     toast.success("Request Rejected");
   };
 
+  const fetchAssets = async () => {
+    try {
+      const res = await getAssetInfo();
+
+      if (res?.data?.assets?.success) {
+        setAssets(res.data.assets.data);
+      } else {
+        setAssets([]);
+        toast.error("Failed to load assets");
+      }
+    } catch (err) {
+      setAssets([]);
+      toast.error("Failed to load assets");
+    }
+  };
+
+  const handleCreateRequest = async () => {
+    if (!formData.assetId || !formData.description) {
+      toast.error("All fields required");
+      return;
+    }
+
+    try {
+      const res = await createAssetRequest(formData);
+
+      if (res.success) {
+        toast.success("Request created successfully");
+        setFormData({ assetId: "", description: "", title: "" });
+        setOpenForm(false);
+        fetchRequestsData();
+        socket.emit("requestCreated");
+      } else {
+        toast.error(res.message);
+      }
+    } catch {
+      toast.error("Failed to create request");
+    }
+  };
+
   useEffect(() => {
     fetchRequestsData();
+    fetchAssets();
 
-    const handleRequestUpdate = () => {
+    socket.on("requestCreated", () => {
+      console.log("requestCreated");
       fetchRequestsData();
-    };
+    });
 
-    socket.on("requestCreated", handleRequestUpdate);
-    socket.on("requestUpdated", handleRequestUpdate);
+    socket.on("requestUpdated", () => {
+      console.log("requestUpdated");
+      fetchRequestsData();
+    });
 
     return () => {
-      socket.off("requestCreated", handleRequestUpdate);
-      socket.off("requestUpdated", handleRequestUpdate);
+      socket.off("requestCreated");
+      socket.off("requestUpdated");
     };
   }, []);
 
-  if (role != "admin") {
+  if (role != "manager") {
     return <h1>You don't have permission for this dashboard</h1>;
   }
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4">Asset Requests</h1>
+      <div className="flex justify-between items-center mb-15">
+        <h1 className="text-2xl font-semibold">Asset Requests</h1>
+
+        <Button variant="contained" onClick={() => setOpenForm(true)}>
+          + Create Request
+        </Button>
+      </div>
 
       <TableContainer component={Paper}>
         <Table>
@@ -142,7 +205,7 @@ const AdminRequest = () => {
                 </TableCell>
                 <TableCell align="center">
                   <div className="flex gap-2 justify-center">
-                    {req.User.role == "manager" ? (
+                    {req.User.role != "manager" ? (
                       req.status === "pending" ? (
                         req.Asset?.status === "available" ? (
                           <>
@@ -176,7 +239,7 @@ const AdminRequest = () => {
                         <span className="text-gray-400 font-semibold">-</span>
                       )
                     ) : (
-                      " - "
+                      "Your Request"
                     )}
                   </div>
                 </TableCell>
@@ -226,8 +289,71 @@ const AdminRequest = () => {
           </div>
         </div>
       )}
+      {openForm && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center">
+          <div
+            className="absolute inset-0 bg-black/50"
+            onClick={() => setOpenForm(false)}
+          />
+
+          <div className="relative bg-white w-full max-w-lg rounded-xl shadow-lg p-6 z-50">
+            <div className="flex justify-between items-center mb-4">
+              <h2 className="text-lg font-semibold">Create Asset Request</h2>
+              <button onClick={() => setOpenForm(false)}>✕</button>
+            </div>
+
+            <div className="flex flex-col gap-4">
+              <Autocomplete
+                options={assets}
+                getOptionLabel={(option) => option.title || ""}
+                isOptionEqualToValue={(option, value) => option.id === value.id}
+                onChange={(e, newValue) => {
+                  if (!newValue) {
+                    setFormData({ assetId: "", description: "", title: "" });
+                    return;
+                  }
+
+                  setFormData({
+                    ...formData,
+                    assetId: newValue.id,
+                    title: newValue.title,
+                  });
+                }}
+                renderInput={(params) => (
+                  <TextField {...params} label="Search Asset" />
+                )}
+                noOptionsText="Not available"
+              />
+
+              <TextField
+                label="Description"
+                multiline
+                rows={3}
+                value={formData.description}
+                onChange={(e) =>
+                  setFormData({ ...formData, description: e.target.value })
+                }
+              />
+            </div>
+
+            <div className="flex justify-end gap-3 mt-6">
+              <Button
+                variant="outlined"
+                color="error"
+                onClick={() => setOpenForm(false)}
+              >
+                Cancel
+              </Button>
+
+              <Button variant="contained" onClick={handleCreateRequest}>
+                Submit
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default AdminRequest;
+export default ManagerRequest;

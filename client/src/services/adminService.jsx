@@ -1,8 +1,8 @@
 import { API } from "../redux/auth/authService";
 
-export const getUser = async () => {
+export const getUser = async (page, limit) => {
   try {
-    const response = await API.get("/admin/users");
+    const response = await API.get(`/admin/users?page=${page}&limit=${limit}`);
     return {
       success: true,
       data: response.data,
@@ -42,7 +42,7 @@ export const unBlockUser = async (id) => {
 
 export const blockIP = async (ip) => {
   try {
-    console.log(ip);
+    
     const response = await API.put(`/admin/block`, { ip: ip });
 
     return response.data;
@@ -226,6 +226,35 @@ export const getManagersWithUsers = async () => {
   try {
     let response = await API.get("/admin/manager/users");
 
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
+};
+
+export const registerNewManager = async (data) => {
+  try {
+    let response = await API.post("/admin/manager/register", {
+      data: data,
+    });
+
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
+};
+
+export const registerUser = async (data) => {
+  try {
+    let response = await API.post("/admin/user/register", {
+      data: data,
+    });
     return response.data;
   } catch (error) {
     return {

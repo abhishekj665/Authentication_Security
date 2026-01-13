@@ -2,6 +2,8 @@ import ExpressError from "../../utils/Error.utils.js";
 import { UserIP } from "../../models/index.model.js";
 import { User } from "../../models/index.model.js";
 import { getPagination } from "../../utils/paginations.utils.js";
+import STATUS from "../../config/constants/Status.js";
+import { generateHash } from "../../utils/generateHash.utils.js";
 
 export const getUsersService = async (page, limits) => {
   try {
@@ -19,7 +21,7 @@ export const getUsersService = async (page, limits) => {
         },
         {
           model: UserIP,
-          required: true,
+          required: false,
           attributes: ["ipAddress", "isBlocked", "createdAt", "updatedAt"],
         },
       ],
@@ -101,5 +103,31 @@ export const unblockIPService = async (ip) => {
     return { success: true, message: `IP ${ip} unblocked successfully` };
   } catch (error) {
     return new ExpressError(400, error.message);
+  }
+};
+
+export const registerUserService = async ({ data }) => {
+  try {
+    if (!data.email || !data.password) {
+      return {
+        success: false,
+        message: "All fields are required",
+      };
+    }
+
+    let hashedPassword = await generateHash(data.password);
+
+    let userData = await User.create({
+      ...data,
+      password: hashedPassword,
+    });
+
+    return {
+      success: true,
+      data: userData,
+      message: "User Registered Successfully",
+    };
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };

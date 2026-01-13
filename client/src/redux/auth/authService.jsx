@@ -17,7 +17,7 @@ export const signup = async (userData) => {
 };
 
 export const verify = async (data) => {
-  console.log(data);
+  
   const response = await API.post("/auth/verify", data);
   return response.data;
 };

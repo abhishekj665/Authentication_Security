@@ -52,6 +52,8 @@ export default function UserExpensePage() {
     try {
       const response = await getExpenses();
 
+      console.log(response.data);
+
       if (response?.success) {
         setExpenses(response.data);
       } else {
@@ -169,7 +171,8 @@ export default function UserExpensePage() {
                   <TableCell>Date</TableCell>
                   <TableCell>Status</TableCell>
                   <TableCell>Receipt</TableCell>
-                  <TableCell>Admin Remark</TableCell>
+                  <TableCell>Remark</TableCell>
+                  <TableCell>Reviewed by</TableCell>
                   <TableCell>Reviewed At</TableCell>
                 </TableRow>
               </TableHead>
@@ -209,6 +212,10 @@ export default function UserExpensePage() {
 
                     <TableCell>
                       {exp.adminRemark || "Not responded yet"}
+                    </TableCell>
+
+                    <TableCell>
+                      {exp?.reviewer?.role ? exp.reviewer.role : "-"}
                     </TableCell>
 
                     <TableCell>

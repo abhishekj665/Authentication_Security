@@ -14,7 +14,9 @@ export const getAllManagersData = async (req, res, next) => {
 
 export const registerManager = async (req, res, next) => {
   try {
-    let data = req.body;
+    let data = req.body.data;
+
+    console.log(data)
 
     let response = await managerServices.registerManagerService(data);
 
@@ -62,5 +64,8 @@ export const getManagersWithUsers = async (req, res, next) => {
     return next(error);
   }
 };
+
+
+
 
 

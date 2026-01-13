@@ -25,7 +25,7 @@ export default function AdminIps() {
         return;
       }
 
-      console.log(response.data.data.data[0]);
+     
 
       const ips = response.data.data.data[0]?.UserIPs || [];
       setUserIPs(ips);

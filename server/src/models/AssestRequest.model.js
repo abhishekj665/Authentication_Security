@@ -44,6 +44,10 @@ const AssetRequest = sequelize.define("AssetRequest", {
     type: DataTypes.TEXT,
     allowNull: true,
   },
+  reviewedBy : {
+    type : DataTypes.UUID,
+    allowNull : true,
+  }
 });
 
 export default AssetRequest;
