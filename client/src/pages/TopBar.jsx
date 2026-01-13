@@ -9,7 +9,7 @@ export default function Topbar() {
   const navigate = useNavigate();
   const handleLogOut = async () => {
     try {
-      console.log("helo");
+      
       const result = await dispatch(logOutUser()).unwrap();
 
       toast.success("Logged out successfully");

@@ -1,9 +1,11 @@
 import { NavLink } from "react-router-dom";
-import PersonIcon from "@mui/icons-material/Person";
 import Inventory2OutlinedIcon from "@mui/icons-material/Inventory2Outlined";
 import PermDataSettingOutlinedIcon from "@mui/icons-material/PermDataSettingOutlined";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
-import ManageAccountsIcon from '@mui/icons-material/ManageAccounts';
+import ManageAccountsIcon from "@mui/icons-material/ManageAccounts";
+import PersonAddIcon from "@mui/icons-material/PersonAdd";
+import AccessibilityIcon from "@mui/icons-material/Accessibility";
+import LocalMallIcon from "@mui/icons-material/LocalMall";
 
 export default function Sidebar() {
   const linkClass = ({ isActive }) =>
@@ -16,19 +18,19 @@ export default function Sidebar() {
 
       <nav className="flex flex-col gap-2">
         <NavLink to="/admin/dashboard" className={linkClass}>
-          <PersonIcon /> Users
+          <PersonAddIcon /> Users
         </NavLink>
 
         <NavLink to="/admin/ips" className={linkClass}>
-          <PersonIcon /> IPs
+          <AccessibilityIcon /> IPs
         </NavLink>
 
         <NavLink to="/admin/asset" className={linkClass}>
-          <PermDataSettingOutlinedIcon /> Assets
+          <LocalMallIcon /> Assets
         </NavLink>
 
         <NavLink to="/admin/requests" className={linkClass}>
-          <Inventory2OutlinedIcon /> Assest Requests
+          <Inventory2OutlinedIcon /> Assets Requests
         </NavLink>
 
         <NavLink to="/admin/expenses" className={linkClass}>

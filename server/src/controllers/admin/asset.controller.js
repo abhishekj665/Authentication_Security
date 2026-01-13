@@ -22,7 +22,6 @@ export const createAsset = async (req, res, next) => {
 };
 
 export const getAllAsset = async (req, res, next) => {
- 
   try {
     let response = await assetServices.getAllAsset();
 

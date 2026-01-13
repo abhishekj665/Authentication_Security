@@ -12,6 +12,7 @@ import UserAssetPage from "./pages/UserAssetPage";
 import AdminRequest from "./pages/AdminRequest";
 import ExpensesPage from "./pages/ExpensesPage";
 import ManagerPage from "./pages/AdminManagerPage";
+import ManagerAsset from "./pages/ManagerAssetPage";
 
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
@@ -19,6 +20,10 @@ import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
 import AdminAsset from "./pages/AdminAsset";
 import UserExpensePage from "./pages/UserExpensePage";
+import ManagerExpensesPage from "./pages/ManagerExpenses";
+import ManagerLayout from "./pages/ManagerLayoutPage";
+import ManagerUserPage from "./pages/ManagerUserPage";
+import ManagerAssetRequest from "./pages/ManagerRequest";
 
 function App() {
   return (
@@ -40,6 +45,14 @@ function App() {
             <Route path="asset" element={<AdminAsset />} />
             <Route path="expenses" element={<ExpensesPage />} />
             <Route path="manager" element={<ManagerPage />} />
+          </Route>
+
+          <Route path="/manager/dashboard" element={<ManagerLayout />}>
+            <Route path="assets" element={<ManagerAsset />} />
+            <Route path="users" element={<ManagerUserPage />} />
+            <Route path="requests" element={<ManagerAssetRequest />} />
+
+            <Route path="expenses" element={<ManagerExpensesPage />} />
           </Route>
 
           <Route path="/" element={<SignUpPage />}></Route>

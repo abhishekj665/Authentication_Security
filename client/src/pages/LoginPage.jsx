@@ -44,18 +44,22 @@ const LogInPage = () => {
           navigate("/admin/dashboard");
           toast.success(response.message);
           resetData();
+        } else if (response?.user?.role === "manager") {
+          navigate("/manager/dashboard");
+          toast.success("Welcome");
+          resetData();
         } else {
           navigate("/home");
           toast.success(response.message);
           resetData();
         }
       } else {
-        console.log("hello");
+        
         toast.error(response.message);
         resetData();
       }
     } catch (error) {
-      console.log(error.message);
+      
       toast.error(error.message);
       resetData();
     }

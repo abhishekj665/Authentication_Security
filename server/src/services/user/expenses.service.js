@@ -5,18 +5,13 @@ import { successResponse } from "../../utils/response.utils.js";
 import { User } from "../../models/index.model.js";
 import bcrypt from "bcrypt";
 
-export const getExpenseDataService = async (user) => {
+export const getExpenseDataService = async () => {
   try {
-    let isAccount = await Account.findOne({ where: { userId: user.id } });
-
-    if (!isAccount) {
-      return {
-        success: false,
-        message: "You don't have an account, Firstly create your account",
-      };
-    }
     let expenseData = await Expenses.findAll({
-      where: { userId: user.id },
+      include: [
+        { model: User, as: "employee", attributes: ["email"] },
+        { model: User, as: "reviewer", attributes: ["email", "role"] },
+      ],
       order: [["updatedAt", "DESC"]],
     });
 
@@ -29,79 +24,106 @@ export const getExpenseDataService = async (user) => {
     } else {
       return {
         success: false,
-        message: "Expense Data Not fetched",
+        message: "No Expense Data Fetched",
       };
     }
   } catch (error) {
-    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+    throw new ExpressError(STATUS.BAD_GATEWAY, error.message);
   }
 };
 
 export const newExpensesService = async (data, user) => {
   try {
-    let expenseData = await Account.findOne({ where: { userId: user.id } });
+    const expenseAccount = await Account.findOne({
+      where: { userId: user.id },
+    });
+
+    if (!expenseAccount) {
+      return {
+        success: false,
+        code: "NO_ACCOUNT",
+        message: "Please create account first",
+      };
+    }
 
     let { amount, expenseDate, pin, receiptUrl } = data;
 
-    console.log(data);
-
-    let verify = await bcrypt.compare(String(pin), expenseData.pin);
+    const verify = await bcrypt.compare(String(pin), expenseAccount.pin);
 
     if (!verify) {
       return {
         success: false,
-        message: "Pin is incrypted",
+        message: "Invalid PIN",
       };
     }
 
-    let expense = await Expenses.create({
+    const expense = await Expenses.create({
       userId: user.id,
-      amount: amount,
-      expenseDate: expenseDate,
-      receiptUrl: receiptUrl,
+      amount,
+      expenseDate,
+      receiptUrl,
+      status: "pending",
     });
-    if (expense) {
-      return {
-        success: true,
-        data: expense,
-        message: "Expense Data Created",
-      };
-    } else {
+
+    if (!expense) {
       return {
         success: false,
-        message: "Expense Create Unsuccessfull",
+        message: "Expense creation failed",
       };
     }
+
+    return {
+      success: true,
+      data: expense,
+      message: "Expense created successfully",
+    };
   } catch (error) {
     throw new ExpressError(STATUS.NOT_ACCEPTABLE, error.message);
   }
 };
 
-export const updateExpenses = async (id, data) => {
+export const updateExpenses = async (expenseId, user, remark = null) => {
   try {
-    let expenseData = await Expenses.findByPk(id);
-
-    if (expenseData.status != "pending") {
+    if (user.role !== "manager" && user.role !== "admin") {
       return {
         success: false,
-        message: "You can't change this expenseData",
+        message: "Unauthorized",
       };
     }
-    let expense = await Expenses.update({ ...data }, { where: { id: id } });
 
-    if (expense) {
-      return {
-        success: true,
-        data: expenseData,
-        message: "Expense Data updated",
-      };
-    } else {
+    const expense = await Expenses.findByPk(expenseId);
+
+    if (!expense) {
       return {
         success: false,
-        message: "Expense Data Not Update",
+        message: "Expense not found",
       };
     }
+
+    let updateData = {
+      reviewedAt: new Date(),
+    };
+
+    if (user.action === "approve") {
+      updateData.status = "approved";
+    }
+
+    if (user.action === "reject") {
+      updateData.status = "rejected";
+      updateData.adminRemark = remark;
+    }
+
+    await Expenses.update(updateData, {
+      where: { id: expenseId },
+    });
+
+    return {
+      success: true,
+      data: expenseId,
+      userId: expense.userId,
+      message: "Expense updated successfully",
+    };
   } catch (error) {
-    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+    throw new ExpressError(STATUS.NOT_ACCEPTABLE, error.message);
   }
 };

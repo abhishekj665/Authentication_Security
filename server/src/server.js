@@ -17,34 +17,40 @@ const io = new Server(server, {
 });
 
 io.on("connection", (socket) => {
+  
+
   try {
     const cookieHeader = socket.handshake.headers.cookie;
 
     if (!cookieHeader) {
-      console.log("NO COOKIE HEADER");
+      console.log(" NO COOKIE HEADER");
       socket.disconnect();
       return;
     }
 
     const cookies = cookie.parse(cookieHeader);
-
     const token = cookies.token;
 
     const decoded = jwt.verify(token, env.jwt_password);
 
+    console.log("Socket authenticated:", decoded.role, decoded.id);
+
     if (decoded.role === "admin") {
       socket.join("admin");
+      console.log("➡ joined admin room");
+    } else if (decoded.role === "manager") {
+      socket.join("manager");
+      console.log("➡ joined manager room");
     }
+
     socket.join(`user:${decoded.id}`);
   } catch (err) {
-    console.log("Socket auth failed");
+    console.log("Socket auth failed:", err.message);
     socket.disconnect();
   }
 
   socket.on("disconnect", (reason) => {
-    if (reason !== "transport close") {
-      console.log(`Socket disconnected: ${socket.id}, reason: ${reason}`);
-    }
+    console.log(`Socket disconnected: ${socket.id}, reason: ${reason}`);
   });
 });
 

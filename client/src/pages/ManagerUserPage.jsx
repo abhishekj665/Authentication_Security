@@ -19,13 +19,13 @@ import {
   TextField,
 } from "@mui/material";
 
-import { registerUser } from "../services/adminService";
+import { registerUser } from "../services/managerService";
 
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 
-import { blockUser, unBlockUser, getUser } from "../services/adminService";
+import { getUser } from "../services/managerService";
 
 const roleColor = (role) => {
   if (role === "admin") return "error";
@@ -33,7 +33,7 @@ const roleColor = (role) => {
   return "primary";
 };
 
-const AdminUserPage = () => {
+const ManagerUserPage = () => {
   const { user } = useSelector((state) => state.auth);
 
   const [page, setPage] = useState(1);
@@ -53,7 +53,7 @@ const AdminUserPage = () => {
 
   const navigate = useNavigate();
 
-  if (user?.role !== "admin") {
+  if (user?.role !== "manager") {
     return <h1>You don't have permission for this page</h1>;
   }
 
@@ -66,33 +66,11 @@ const AdminUserPage = () => {
         return;
       }
 
-    
-
       setUsers(res.data.data.data);
       setTotalPages(res.data.data.totalPages);
     } catch (err) {
       console.error(err);
     }
-  };
-
-  const handleBlock = async (id) => {
-    if (!window.confirm("Are you sure you want to block this user?")) return;
-
-    const res = await blockUser(id);
-    if (res.success) {
-      toast.success(res.message);
-      fetchUsers();
-    } else toast.error(res.message);
-  };
-
-  const handleUnblock = async (id) => {
-    if (!window.confirm("Are you sure you want to unblock this user?")) return;
-
-    const res = await unBlockUser(id);
-    if (res.success) {
-      toast.success(res.message);
-      fetchUsers();
-    } else toast.error(res.message);
   };
 
   const handleCreateUser = async () => {
@@ -102,8 +80,6 @@ const AdminUserPage = () => {
 
     try {
       const res = await registerUser(userForm);
-
-      
 
       if (res.success) {
         toast.success("User registered successfully");
@@ -238,8 +214,7 @@ const AdminUserPage = () => {
               <TableCell>Role</TableCell>
               <TableCell>Status</TableCell>
               <TableCell>Blocked</TableCell>
-              <TableCell>Manager</TableCell>
-              <TableCell>Action</TableCell>
+              <TableCell>Assigned Manager</TableCell>
             </TableRow>
           </TableHead>
 
@@ -277,29 +252,7 @@ const AdminUserPage = () => {
                 <TableCell>
                   {u.manager
                     ? `${u.manager.first_name} ${u.manager.last_name || ""}`
-                    : "Manager Not Assigned"}
-                </TableCell>
-
-                <TableCell>
-                  {u.isBlocked ? (
-                    <Button
-                      size="small"
-                      variant="contained"
-                      color="success"
-                      onClick={() => handleUnblock(u.id)}
-                    >
-                      Unblock
-                    </Button>
-                  ) : (
-                    <Button
-                      size="small"
-                      variant="outlined"
-                      color="error"
-                      onClick={() => handleBlock(u.id)}
-                    >
-                      Block
-                    </Button>
-                  )}
+                    : "Not Assigned Yet"}
                 </TableCell>
               </TableRow>
             ))}
@@ -334,4 +287,4 @@ const AdminUserPage = () => {
   );
 };
 
-export default AdminUserPage;
+export default ManagerUserPage;

@@ -1,4 +1,4 @@
-import { AssetRequest, Asset } from "../../models/index.model.js";
+import { AssetRequest, Asset, User } from "../../models/index.model.js";
 
 import { Op } from "sequelize";
 
@@ -16,8 +16,6 @@ export const createAssetRequestService = async (data, user) => {
 
   const asset = await Asset.findByPk(assetId);
 
-  
-
   if (!asset) throw new ExpressError(404, "Asset not found");
 
   await AssetRequest.create({
@@ -28,28 +26,21 @@ export const createAssetRequestService = async (data, user) => {
     description,
   });
 
-  
-
   return { success: true, message: "Asset request created successfully" };
 };
 
 export const getAssetRequestService = async (id) => {
   try {
     const requestData = await AssetRequest.findAll({
-      where: { userId: id },
+      order: [["createdAt", "DESC"]],
       include: [
+        { model: User, attributes: ["email", "role"] },
         {
           model: Asset,
-          attributes: [
-            "title",
-            "category",
-            "price",
-            "status",
-            "availableQuantity",
-          ],
+          attributes: ["id", "title", "price", "status", "availableQuantity"],
         },
+        { model: User, as: "reviewer", attributes: ["id", "email", "role"] },
       ],
-      order: [["createdAt", "DESC"]],
     });
 
     return {

@@ -49,6 +49,10 @@ Expenses.belongsTo(User, { foreignKey: "userId", as: "employee" });
 User.hasMany(Expenses, { foreignKey: "reviewedBy" });
 Expenses.belongsTo(User, { foreignKey: "reviewedBy", as: "reviewer" });
 
+User.hasMany(AssetRequest, { foreignKey: "reviewedBy" });
+AssetRequest.belongsTo(User, { foreignKey: "reviewedBy", as: "reviewer" });
+
+
 User.hasOne(Account, {
   foreignKey: "userId",
   onDelete: "CASCADE",

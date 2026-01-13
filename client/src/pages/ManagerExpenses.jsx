@@ -19,7 +19,7 @@ import {
   getAllExpenses,
   approveExpense,
   rejectExpense,
-} from "../services/adminService";
+} from "../services/managerService";
 
 const statusColor = (status) => {
   if (status === "approved") return "success";
@@ -27,7 +27,7 @@ const statusColor = (status) => {
   return "warning";
 };
 
-const ExpensesPage = () => {
+const ManagerExpensesPage = () => {
   const [expenses, setExpenses] = useState([]);
 
   const { user } = useSelector((state) => state.auth);
@@ -57,7 +57,6 @@ const ExpensesPage = () => {
 
     if (response.success) {
       toast.success("Expense approved");
-      fetchExpenses();
     } else {
       toast.error(response.message);
     }
@@ -72,22 +71,33 @@ const ExpensesPage = () => {
 
     await rejectExpense(id, remark);
     toast.success("Expense rejected");
-    fetchExpenses();
   };
 
   useEffect(() => {
     fetchExpenses();
+    console.log("Manager socket id:", socket.id);
 
-    socket.on("expenseCreated", fetchExpenses);
-    socket.on("expenseUpdated", fetchExpenses);
+    socket.on("connect", () => {
+      console.log("Manager connected:", socket.id);
+    });
+
+    socket.on("expenseCreated", () => {
+      console.log("expenseCreated");
+      fetchExpenses();
+    });
+
+    socket.on("expenseUpdated", () => {
+      console.log("expenseUpdated");
+      fetchExpenses();
+    });
 
     return () => {
-      socket.off("expenseCreated", fetchExpenses);
-      socket.off("expenseUpdated", fetchExpenses);
+      socket.off("expenseCreated");
+      socket.off("expenseUpdated");
     };
   }, []);
 
-  if (role !== "admin") {
+  if (role !== "manager") {
     return <h1>You don't have permission for this dashboard</h1>;
   }
 
@@ -142,13 +152,14 @@ const ExpensesPage = () => {
                     "-"
                   )}
                 </TableCell>
+
                 <TableCell>
                   {exp?.reviewer?.role ? exp.reviewer.role : "-"}
                 </TableCell>
 
                 <TableCell align="center">
                   <div className="flex gap-2 justify-center">
-                    {exp.employee.role == "manager" ? (
+                    {exp.employee.role != "manager" ? (
                       exp.status === "pending" ? (
                         <>
                           <Button
@@ -176,7 +187,7 @@ const ExpensesPage = () => {
                         <span className="text-gray-400 font-semibold">-</span>
                       )
                     ) : (
-                      " - "
+                      "Your Request"
                     )}
                   </div>
                 </TableCell>
@@ -258,4 +269,4 @@ const ExpensesPage = () => {
   );
 };
 
-export default ExpensesPage;
+export default ManagerExpensesPage;
