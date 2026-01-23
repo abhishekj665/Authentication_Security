@@ -7,6 +7,7 @@ import { globalErrorHandler } from "./middlewares/error.midlleware.js";
 import { expensesRouter } from "./routes/expenses.routes.js";
 import { accountRouter } from "./routes/account.routes.js";
 import { managerRouter } from "./routes/manager.routes.js";
+import {attendanceRouter} from "./routes/attendance.routes.js"
 
 import cors from "cors";
 import path from "path";
@@ -32,6 +33,7 @@ app.use("/admin", adminRouter);
 app.use("/manager",managerRouter)
 app.use("/expenses", expensesRouter);
 app.use("/account", accountRouter)
+app.use("/attendance", attendanceRouter)
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.use(globalErrorHandler);

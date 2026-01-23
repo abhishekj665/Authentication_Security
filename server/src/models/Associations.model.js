@@ -6,6 +6,7 @@ import Asset from "./Asset.model.js";
 import UserAsset from "./UserAsset.model.js";
 import Expenses from "./Expenses.model.js";
 import Account from "./Account.model.js";
+import { Attendance } from "./Attendance.model.js";
 
 User.hasMany(UserIP, { foreignKey: "userId" });
 UserIP.belongsTo(User, { foreignKey: "userId" });
@@ -52,7 +53,6 @@ Expenses.belongsTo(User, { foreignKey: "reviewedBy", as: "reviewer" });
 User.hasMany(AssetRequest, { foreignKey: "reviewedBy" });
 AssetRequest.belongsTo(User, { foreignKey: "reviewedBy", as: "reviewer" });
 
-
 User.hasOne(Account, {
   foreignKey: "userId",
   onDelete: "CASCADE",
@@ -65,4 +65,21 @@ Account.belongsTo(User, {
 User.hasMany(User, { as: "workers", foreignKey: "managerId" });
 User.belongsTo(User, { as: "manager", foreignKey: "managerId" });
 
-export { User, OTP, UserIP, AssetRequest, Asset, UserAsset, Account, Expenses };
+User.hasMany(Attendance, {
+  as: "employee",
+  foreignKey: "userId",
+  onDelete: "CASCADE",
+});
+Attendance.belongsTo(User, { as: "employee", foreignKey: "userId" });
+
+export {
+  User,
+  OTP,
+  UserIP,
+  AssetRequest,
+  Asset,
+  UserAsset,
+  Account,
+  Expenses,
+  Attendance,
+};
