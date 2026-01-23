@@ -39,7 +39,7 @@ export const updateUserService = async (userId, data) => {
 
 export const deleteUserService = async (id) => {
   try {
-    let user = await User.destroy({ where: { id } });
+    let user = await User.destroy({ where: { id }, force : true});
 
     if (!user) return { message: "User not found" };
 
@@ -51,7 +51,8 @@ export const deleteUserService = async (id) => {
 
 export const getProfileService = async (id) => {
   try {
-    const user = await User.findOne({ where: { id } });
+    const user = await User.findOne({ where: { id },
+    attributes : ["id","first_name","last_name","email","role","isBlocked","isVerified"] });
 
     if (!user) {
       return res.status(404).json({ error: "User not found" });

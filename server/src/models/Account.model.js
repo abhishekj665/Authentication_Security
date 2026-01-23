@@ -36,6 +36,13 @@ const Account = sequelize.define("Account", {
     allowNull: true,
     defaultValue: 0,
   },
+},
+{
+  timestamps : true,
+  indexes : [
+    {fields : ["id", "userId"]}
+  ],
+  paranoid : true
 });
 
 export default Account;

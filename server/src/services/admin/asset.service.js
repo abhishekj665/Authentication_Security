@@ -91,7 +91,7 @@ export const deleteAssetService = async (id) => {
 
     if (!asset) return { message: "Asset not found" };
 
-    await Asset.destroy({ where: { id } });
+    await Asset.destroy({ where: { id }, force : true});
 
     if (!asset) return { message: "Asset not found" };
 

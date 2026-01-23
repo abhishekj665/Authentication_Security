@@ -1,4 +1,4 @@
-import {sequelize} from "../config/db.js";
+import { sequelize } from "../config/db.js";
 
 import { DataTypes } from "sequelize";
 
@@ -59,7 +59,11 @@ const User = sequelize.define(
   },
   {
     timestamps: true,
-  }
+    paranoid: true,
+    indexes : [
+      {fields : ["email", "id", "managerId"]}
+    ]
+  },
 );
 
 await User.sync();

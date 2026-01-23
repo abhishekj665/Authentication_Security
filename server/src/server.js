@@ -5,6 +5,7 @@ import http from "http";
 import { Server } from "socket.io";
 import cookie from "cookie";
 import jwt from "jsonwebtoken";
+import { syncDB } from "./config/db.js";
 
 const server = http.createServer(app);
 
