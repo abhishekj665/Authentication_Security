@@ -91,7 +91,7 @@ export const deleteAssetService = async (id) => {
 
     if (!asset) return { message: "Asset not found" };
 
-    await Asset.destroy({ where: { id }, force : true});
+    await Asset.destroy({ where: { id } });
 
     if (!asset) return { message: "Asset not found" };
 
@@ -123,7 +123,7 @@ export const updateAssetService = async (id, data) => {
       if (newTotal < alreadyAssigned) {
         throw new ExpressError(
           400,
-          `Cannot set total quantity below already assigned (${alreadyAssigned})`
+          `Cannot set total quantity below already assigned (${alreadyAssigned})`,
         );
       }
 

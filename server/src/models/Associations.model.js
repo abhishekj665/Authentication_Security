@@ -1,4 +1,4 @@
-import User from "./user.model.js";
+import User from "./User.model.js";
 import OTP from "./Otp.models.js";
 import UserIP from "./UserIP.model.js";
 import AssetRequest from "./AssestRequest.model.js";

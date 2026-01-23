@@ -2,14 +2,13 @@ import { Button } from "@mui/material";
 import { useDispatch } from "react-redux";
 import { logOutUser } from "../redux/auth/authThunk";
 import { toast } from "react-toastify";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
-export default function Topbar() {
+export default function Topbar({userName}) {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const handleLogOut = async () => {
     try {
-      
       const result = await dispatch(logOutUser()).unwrap();
 
       toast.success("Logged out successfully");
@@ -22,6 +21,7 @@ export default function Topbar() {
   return (
     <div className="h-16 bg-white shadow flex items-center justify-between px-6">
       <h2 className="text-lg font-semibold">Dashboard</h2>
+      <h1>Welcome {userName}</h1>
       <Button onClick={handleLogOut}>LogOut</Button>
     </div>
   );
