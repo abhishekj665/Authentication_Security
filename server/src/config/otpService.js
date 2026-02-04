@@ -16,13 +16,7 @@ export const createOTP = async (email, otp, purpose) => {
   sendMailOtp(email, otp);
 };
 
-export const transporter = nodemailer.createTransport({
-  service: "gmail",
-  auth: {
-    user: env.mail_user,
-    pass: env.mail_pass,
-  },
-});
+
 
 export const sendMailOtp = async (email, otp) => {
   await transporter.sendMail({
@@ -32,6 +26,17 @@ export const sendMailOtp = async (email, otp) => {
     text: `Your OTP is ${otp}. It expires in 5 minutes.`,
   });
 };
+
+
+export const transporter = nodemailer.createTransport({
+  host: "smtp.gmail.com",
+  port: 587,
+  secure: false,
+  auth: {
+    user: env.mail_user,
+    pass: env.mail_pass,
+  },
+});
 
 export const findOtpData = async (email, purpose) => {
   const otpData = await OTP.findOne({
