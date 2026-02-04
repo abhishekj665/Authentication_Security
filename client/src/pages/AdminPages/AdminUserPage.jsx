@@ -209,15 +209,17 @@ const AdminUserPage = () => {
       </Dialog>
 
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-semibold">User Management</h1>
-
         <div className="flex items-center gap-4">
-          <Button variant="contained" onClick={() => setOpenCreateUser(true)}>
-            + Register User
+          <Button
+            className="w-20px]"
+            variant="contained"
+            onClick={() => setOpenCreateUser(true)}
+          >
+            Register
           </Button>
 
           <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-600">Rows per page:</span>
+            <span className="text-sm text-gray-600">Limit:</span>
             <select
               value={limit}
               onChange={(e) => setLimit(Number(e.target.value))}
@@ -254,8 +256,8 @@ const AdminUserPage = () => {
                 <TableCell>
                   <Chip
                     label={u.role}
+                    color={roleColor(u.role)}
                     size="small"
-                    
                     sx={{ textTransform: "capitalize", fontWeight: 600 }}
                   />
                 </TableCell>
@@ -263,8 +265,8 @@ const AdminUserPage = () => {
                 <TableCell>
                   <Chip
                     label={u.isVerified ? "Verified" : "Unverified"}
+                    color={u.isVerified ? "success" : "error"}
                     size="small"
-                    
                   />
                 </TableCell>
 
@@ -272,7 +274,7 @@ const AdminUserPage = () => {
                   <Chip
                     label={u.isBlocked ? "Yes" : "No"}
                     size="small"
-                    
+                    color={u.isVerified ? "success" : "error"}
                   />
                 </TableCell>
 

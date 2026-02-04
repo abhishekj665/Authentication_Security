@@ -56,7 +56,7 @@ const AdminRequest = () => {
 
   const handleApprove = async (id) => {
     const isConfirmed = window.confirm(
-      "Are you sure you want to approve this request?"
+      "Are you sure you want to approve this request?",
     );
 
     if (!isConfirmed) return;
@@ -76,7 +76,7 @@ const AdminRequest = () => {
 
   const handleReject = async (id, remark) => {
     const isConfirmed = window.confirm(
-      "Are you sure you want to reject this request?"
+      "Are you sure you want to reject this request?",
     );
 
     if (!isConfirmed) return;
@@ -110,7 +110,7 @@ const AdminRequest = () => {
 
   return (
     <div className="p-6">
-      <h1 className="text-2xl font-semibold mb-4">Asset Requests</h1>
+      <h1 className="text-2xl w-5 font-semibold mb-4">Asset Requests</h1>
 
       <TableContainer component={Paper}>
         <Table>

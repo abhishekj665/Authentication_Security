@@ -11,13 +11,10 @@ const server = http.createServer(app);
 
 const io = new Server(server, {
   cors: {
-    origin: [env.client_url?.trim()],
+    origin: [env.client_url?.trim(), "http://localhost:5173"],
     credentials: true,
   },
 });
-
-
-
 
 io.on("connection", (socket) => {
   try {
@@ -67,8 +64,6 @@ const startServer = async () => {
     console.log(`Server listening on port ${env.port}`);
   });
 };
-
-
 
 startServer();
 
