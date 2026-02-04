@@ -5,13 +5,14 @@ import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
 import { Switch } from "@mui/material";
 import { useState } from "react";
-import { FormControlLabel } from "@mui/material";
+import { FormControlLabel, IconButton } from "@mui/material";
+import MenuIcon from "@mui/icons-material/Menu";
 import { punchOut } from "../services/attendanceService";
 import { punchIn } from "../services/attendanceService";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 
-export default function Topbar() {
+export default function Topbar({ open, setOpen }) {
   const user = useSelector((state) => state.auth.user);
 
   const [punch, setPunch] = useState(user?.punchInAt || false);
@@ -91,16 +92,20 @@ export default function Topbar() {
   }
 
   return (
-    <div className="h-16 bg-white shadow flex items-center justify-between px-6">
-      <h2 className="text-lg font-semibold">Dashboard</h2>
-      <h1>Welcome &nbsp; {user?.email?.split("@")[0]}</h1>
-
+    <div className="h-16 shadow flex items-center justify-between px-6">
+      <div className="flex items-center gap-2">
+        <div className="md:hidden">
+          <IconButton onClick={() => setOpen(!open)}>
+            <MenuIcon />
+          </IconButton>
+        </div>
+      </div>
       <FormControlLabel
         control={
           <div style={{ display: "flex", alignItems: "center" }}>
             {punch ? "Punch Out" : "Punch In"}
             <Switch checked={punch} onClick={handlePunch} />
-            <span style={{ marginLeft: "10px" }}>
+            <span style={{ marginLeft: "5px" }}>
               {punch ? `${hours}h : ${minutes}m : ${seconds}s` : ""}
             </span>
           </div>

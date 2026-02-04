@@ -5,7 +5,7 @@ import { toast } from "react-toastify";
 import PendingActionsRoundedIcon from "@mui/icons-material/PendingActionsRounded";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 
-export default function UserSidebar() {
+export default function UserSidebar({open, setOpen}) {
 
   const { user } = useSelector((state) => state.auth);
 
@@ -25,14 +25,26 @@ export default function UserSidebar() {
      ${isActive ? "bg-gray-200 text-black" : "text-gray-600 hover:text-black"}`;
 
   return (
-    <aside className="w-64 bg-white shadow-md hidden md:flex flex-col p-5">
-      <h1 className="text-xl font-bold mb-8 text-gray-800">User Panel</h1>
+   <aside
+      className={`
+        fixed md:static top-0 left-0 z-50 h-full w-64 shadow-md
+        flex flex-col p-5 transition-transform duration-300
+        ${open ? "translate-x-0" : "-translate-x-full"}
+        md:translate-x-0
+        bg-white
+      `}
+    >
+      <h1 className="text-xl font-bold mb-8 text-gray-800">
+        <div className="text-lg font-medium flex italic tracking-tight">
+          <p>{user?.role?.toUpperCase()} DASHBOARD</p>
+        </div>
+      </h1>
 
       <nav className="flex flex-col gap-2">
-        <NavLink to="/home/asset" className={linkClass}>
+        <NavLink to="/home/asset" onClick={() => setOpen(false)} className={linkClass}>
           <PendingActionsRoundedIcon /> Assets
         </NavLink>
-        <NavLink to="/home/expense" className={linkClass}>
+        <NavLink to="/home/expense" onClick={() => setOpen(false)} className={linkClass}>
           <CurrencyExchangeIcon /> Expense
         </NavLink>
       </nav>

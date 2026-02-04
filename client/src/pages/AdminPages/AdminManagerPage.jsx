@@ -74,8 +74,6 @@ export default function AdminManagersPage() {
 
       const res = await getUser(currentPage, 9, searchValue);
 
-      
-
       if (res.success) {
         const newUsers = res.data.users;
 
@@ -206,8 +204,12 @@ export default function AdminManagersPage() {
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-semibold">Manager Control</h1>
 
-          <Button variant="contained" onClick={() => setOpenCreate(true)}>
-            + Register Manager
+          <Button
+            className="text-xl"
+            variant="contained"
+            onClick={() => setOpenCreate(true)}
+          >
+            Register
           </Button>
         </div>
 

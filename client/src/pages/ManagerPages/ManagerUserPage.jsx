@@ -190,11 +190,13 @@ const ManagerUserPage = () => {
       </Dialog>
 
       <div className="flex justify-between items-center mb-4">
-        <h1 className="text-2xl font-semibold">User Management</h1>
-
         <div className="flex items-center gap-4">
-          <Button variant="contained" onClick={() => setOpenCreateUser(true)}>
-            + Register User
+          <Button
+            className="w-20px]"
+            variant="contained"
+            onClick={() => setOpenCreateUser(true)}
+          >
+            Register
           </Button>
 
           <div className="flex items-center gap-2">
@@ -236,18 +238,24 @@ const ManagerUserPage = () => {
                     label={u.role}
                     size="small"
                     sx={{ textTransform: "capitalize", fontWeight: 600 }}
+                    color={roleColor(u.role)}
                   />
                 </TableCell>
 
                 <TableCell>
                   <Chip
                     label={u.isVerified ? "Verified" : "Unverified"}
+                    color={u.isVerified ? "success" : "error"}
                     size="small"
                   />
                 </TableCell>
 
                 <TableCell>
-                  <Chip label={u.isBlocked ? "Yes" : "No"} size="small" />
+                  <Chip
+                    label={u.isBlocked ? "Yes" : "No"}
+                    size="small"
+                    color={u.isBlocked ? "success" : "error"}
+                  />
                 </TableCell>
 
                 <TableCell>

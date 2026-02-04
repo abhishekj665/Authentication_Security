@@ -59,8 +59,6 @@ const ManagerRequest = () => {
     }, 800);
 
     return;
-
-    
   }
   const role = user.role;
 
@@ -72,7 +70,7 @@ const ManagerRequest = () => {
 
   const handleApprove = async (id) => {
     const isConfirmed = window.confirm(
-      "Are you sure you want to approve this request?"
+      "Are you sure you want to approve this request?",
     );
 
     if (!isConfirmed) return;
@@ -92,7 +90,7 @@ const ManagerRequest = () => {
 
   const handleReject = async (id, remark) => {
     const isConfirmed = window.confirm(
-      "Are you sure you want to reject this request?"
+      "Are you sure you want to reject this request?",
     );
 
     if (!isConfirmed) return;
@@ -170,10 +168,14 @@ const ManagerRequest = () => {
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-15">
-        <h1 className="text-2xl font-semibold">Asset Requests</h1>
+        <h1 className="text-xl font-semibold">Asset Requests</h1>
 
-        <Button variant="contained" onClick={() => setOpenForm(true)}>
-          + Create Request
+        <Button
+          className="w-20px]"
+          variant="contained"
+          onClick={() => setOpenForm(true)}
+        >
+          Request +
         </Button>
       </div>
 
@@ -215,7 +217,9 @@ const ManagerRequest = () => {
                   {new Date(req.createdAt).toLocaleDateString()}
                 </TableCell>
                 <TableCell>
-                  {req?.reviewer?.id == user.id ? "You" : req?.reviewer?.role || "-"}
+                  {req?.reviewer?.id == user.id
+                    ? "You"
+                    : req?.reviewer?.role || "-"}
                 </TableCell>
                 <TableCell align="center">
                   <div className="flex gap-2 justify-center">
