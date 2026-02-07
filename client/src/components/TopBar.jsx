@@ -16,6 +16,7 @@ export default function Topbar({ open, setOpen }) {
   const user = useSelector((state) => state.auth.user);
 
   const [punch, setPunch] = useState(user?.punchInAt || false);
+
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
@@ -78,6 +79,19 @@ export default function Topbar({ open, setOpen }) {
   };
 
   useEffect(() => {
+    const loadPunchStatus = async () => {
+      const res = await punchIn();
+      if (res.success && res.data) {
+        const t = new Date(res.data).getTime();
+        setPunch(true);
+        setPunchInTime(t);
+      }
+    };
+
+    loadPunchStatus();
+  }, []);
+
+  useEffect(() => {
     if (!punchInTime) return;
 
     const interval = setInterval(() => {
@@ -87,15 +101,11 @@ export default function Topbar({ open, setOpen }) {
     return () => clearInterval(interval);
   }, [punchInTime]);
 
-  if (user === null) {
-    return null;
-  }
-
   return (
     <div className="h-16 shadow flex items-center justify-between px-6">
       <div className="flex items-center mr-5 gap-2">
         <div className="md:hidden">
-          <IconButton  onClick={() => setOpen(!open)}>
+          <IconButton onClick={() => setOpen(!open)}>
             <MenuIcon />
           </IconButton>
         </div>
@@ -104,7 +114,7 @@ export default function Topbar({ open, setOpen }) {
         control={
           <div style={{ display: "flex", alignItems: "center" }}>
             {punch ? "Punch Out" : "Punch In"}
-            <Switch checked={punch} onClick={handlePunch} />
+            <Switch checked={punch} onChange={handlePunch} />
             <span style={{ marginLeft: "5px" }}>
               {punch ? `${hours}h : ${minutes}m : ${seconds}s` : ""}
             </span>
