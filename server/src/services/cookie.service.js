@@ -1,7 +1,8 @@
 const cookieOptions = {
   httpOnly: true,
-  secure: true,
-  sameSite: "none",
+  secure: false,
+  sameSite: "lax",
+
   path: "/",
 };
 
@@ -15,4 +16,3 @@ export const setCookie = (res, name, value) => {
 export const clearCookie = (res, name) => {
   res.clearCookie(name, cookieOptions);
 };
-
