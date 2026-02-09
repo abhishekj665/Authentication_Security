@@ -1,5 +1,12 @@
 {
   "rewrites": [
-    { "source": "/api/:path*", "destination": "https://authentication-security-pjpu.onrender.com/:path*" }
+    {
+      "source": "/api/:path*",
+      "destination": "https://authentication-security-pjpu.onrender.com/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/"
+    }
   ]
 }
