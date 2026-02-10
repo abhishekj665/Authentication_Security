@@ -7,7 +7,7 @@ import { Switch } from "@mui/material";
 import { useState } from "react";
 import { FormControlLabel, IconButton } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { punchOut } from "../services/attendanceService";
+import { punchOut, getTodayAttendance } from "../services/attendanceService";
 import { punchIn } from "../services/attendanceService";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
@@ -15,23 +15,26 @@ import { useSelector } from "react-redux";
 export default function Topbar({ open, setOpen }) {
   const user = useSelector((state) => state.auth.user);
 
-  const [punch, setPunch] = useState(user?.punchInAt || false);
+  const [punch, setPunch] = useState(false);
+  const [punchInTime, setPunchInTime] = useState(null);
+  const [baseMinutes, setBaseMinutes] = useState(0);
 
   const [hours, setHours] = useState(0);
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
 
-  const [punchInTime, setPunchInTime] = useState(
-    user?.punchInAt ? new Date(user.punchInAt).getTime() : null,
-  );
-
   const setTimer = () => {
+    if (!punchInTime) return;
+
     const now = Date.now();
-    const diff = now - punchInTime;
-    const totalSeconds = Math.floor(diff / 1000);
+    const sessionSeconds = Math.floor((now - punchInTime) / 1000);
+
+    const totalSeconds = baseMinutes * 60 + sessionSeconds;
+
     const hrs = Math.floor(totalSeconds / 3600);
     const mins = Math.floor((totalSeconds % 3600) / 60);
     const secs = totalSeconds % 60;
+
     setHours(hrs);
     setMinutes(mins);
     setSeconds(secs);
@@ -53,53 +56,55 @@ export default function Topbar({ open, setOpen }) {
   };
   const handlePunch = async () => {
     if (punch) {
-      let response = await punchOut();
+      const response = await punchOut();
 
-      if (response.success) {
-        setPunchInTime(null);
-        setHours(0);
-        setMinutes(0);
-        setSeconds(0);
-        setPunch(false);
-        toast.success(response.message);
+      if (!response.success) {
+        toast.error(response.message);
         return;
       }
-    } else {
-      let response = await punchIn();
-      if (response.success) {
-        const serverTime = new Date(response.data).getTime();
 
-        setPunchInTime(serverTime);
+      toast.success(response.message);
+      await loadStatus();
+      return;
+    }
+
+    const response = await punchIn();
+
+    if (!response.success) {
+      toast.error(response.message);
+      return;
+    }
+
+    toast.success(response.message);
+    await loadStatus();
+  };
+
+  const loadStatus = async () => {
+    const res = await getTodayAttendance();
+
+    if (res.success && res.data) {
+      setBaseMinutes(res.data.workedMinutes || 0);
+
+      if (res.data.lastInAt) {
         setPunch(true);
-        toast.success(response.message);
+        setPunchInTime(new Date(res.data.lastInAt).getTime());
       } else {
-        toast.error(response.message);
+        setPunch(false);
+        setPunchInTime(null);
       }
     }
   };
 
   useEffect(() => {
-    const loadPunchStatus = async () => {
-      const res = await punchIn();
-      if (res.success && res.data) {
-        const t = new Date(res.data).getTime();
-        setPunch(true);
-        setPunchInTime(t);
-      }
-    };
-
-    loadPunchStatus();
+    loadStatus();
   }, []);
 
   useEffect(() => {
     if (!punchInTime) return;
 
-    const interval = setInterval(() => {
-      setTimer();
-    }, 1000);
-
+    const interval = setInterval(setTimer, 1000);
     return () => clearInterval(interval);
-  }, [punchInTime]);
+  }, [punchInTime, baseMinutes]);
 
   return (
     <div className="h-16 shadow flex items-center justify-between px-6">

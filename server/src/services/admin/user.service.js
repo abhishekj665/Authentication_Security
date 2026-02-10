@@ -26,6 +26,8 @@ export const getUsersService = async (page, limits, search) => {
     const { count, rows } = await User.findAndCountAll({
       limit,
       offset,
+      distinct: true,
+      col: "id",
       where: whereCondition,
       attributes: { exclude: ["password"] },
       include: [
@@ -161,11 +163,11 @@ export const getIPService = async () => {
     const ips = await UserIP.findAll({
       attributes: [
         [sequelize.fn("DISTINCT", sequelize.col("ipAddress")), "ipAddress"],
+        "isBlocked",
+        "failedLogInAttempt",
       ],
       raw: true,
     });
-
-    console.log(ips);
     return {
       success: true,
       data: ips,

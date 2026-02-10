@@ -1,6 +1,5 @@
-import { now } from "sequelize/lib/utils";
 import { sequelize } from "../config/db.js";
-import { DataTypes, DATE, UUID, UUIDV4 } from "sequelize";
+import { DataTypes, UUIDV4 } from "sequelize";
 
 const Attendance = sequelize.define(
   "Attendance",
@@ -12,8 +11,8 @@ const Attendance = sequelize.define(
       defaultValue: UUIDV4,
     },
     userId: {
-      type: UUID,
-      allowNull: true,
+      type: DataTypes.UUID,
+      allowNull: false,
     },
     punchInAt: {
       type: DataTypes.DATE,
@@ -23,13 +22,37 @@ const Attendance = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
-    presentDay: {
-      type: DataTypes.FLOAT,
+    breakMinutes: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+
+    isApproved: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    workedMinutes: {
+      type: DataTypes.INTEGER,
       defaultValue: 0,
     },
-    totalLeaves: {
-      type: DataTypes.FLOAT,
-      defaultValue: 0,
+
+    overtimeMinutes: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+    },
+
+    isLate: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+
+    isHalfDay: {
+      type: DataTypes.BOOLEAN,
+      defaultValue: false,
+    },
+    lastInAt: {
+      type: DataTypes.DATE,
+      allowNull: true,
     },
   },
   {

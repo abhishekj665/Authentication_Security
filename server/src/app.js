@@ -8,14 +8,13 @@ import { expensesRouter } from "./routes/expenses.routes.js";
 import { accountRouter } from "./routes/account.routes.js";
 import { managerRouter } from "./routes/manager.routes.js";
 import { attendanceRouter } from "./routes/attendance.routes.js";
+import { attendancePolicyRouter } from "./routes/attendancePolicy.routes.js";
 
 import cors from "cors";
 import path from "path";
 import { env } from "./config/env.js";
 
 const app = express();
-
-const allowList = [env.client_url?.trim()];
 
 app.set("trust proxy", 1);
 
@@ -41,6 +40,8 @@ app.use("/manager", managerRouter);
 app.use("/expenses", expensesRouter);
 app.use("/account", accountRouter);
 app.use("/attendance", attendanceRouter);
+app.use("/attendance-policy", attendancePolicyRouter);
+
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 
 app.use(globalErrorHandler);

@@ -56,16 +56,25 @@ const User = sequelize.define(
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
+
+    totalPresentDay: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
+    totalLeaves: {
+      type: DataTypes.FLOAT,
+      defaultValue: 0,
+    },
+    attendancePolicyId: {
+      type: DataTypes.UUID,
+      allowNull: true,
+    },
   },
   {
     timestamps: true,
     paranoid: true,
-    indexes : [
-      {fields : ["email", "id", "managerId"]}
-    ]
+    indexes: [{ fields: ["email", "id", "managerId"] }],
   },
 );
-
-await User.sync();
 
 export default User;

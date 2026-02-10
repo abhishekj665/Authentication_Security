@@ -22,8 +22,6 @@ import {
 import { registerUser } from "../../services/adminService";
 
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
-import { useNavigate } from "react-router-dom";
 
 import { blockUser, unBlockUser, getUser } from "../../services/adminService";
 
@@ -34,8 +32,6 @@ const roleColor = (role) => {
 };
 
 const AdminUserPage = () => {
-  
-
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
   const [search, setSearch] = useState("");
@@ -51,10 +47,6 @@ const AdminUserPage = () => {
     email: "",
     password: "",
   });
-
-  
-
-  
 
   const fetchUsers = async (currentPage = page) => {
     try {
@@ -134,13 +126,8 @@ const AdminUserPage = () => {
   };
 
   useEffect(() => {
-    setPage(1);
-    fetchUsers(1);
-  }, [limit]);
-
-  useEffect(() => {
     fetchUsers(page);
-  }, [page]);
+  }, [page, limit]);
 
   return (
     <div className="max-w-full mx-auto mt-10 px-6">

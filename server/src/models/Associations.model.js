@@ -6,7 +6,9 @@ import Asset from "./Asset.model.js";
 import UserAsset from "./UserAsset.model.js";
 import Expenses from "./Expenses.model.js";
 import Account from "./Account.model.js";
-import  Attendance  from "./Attendance.model.js";
+import Attendance from "./Attendance.model.js";
+import AttendancePolicy from "./AttendancePolicy.model.js";
+import OvertimePolicy from "./OvertimePolicy.js";
 
 User.hasMany(UserIP, { foreignKey: "userId" });
 UserIP.belongsTo(User, { foreignKey: "userId" });
@@ -62,7 +64,13 @@ Account.belongsTo(User, {
   foreignKey: "userId",
 });
 
-User.hasMany(User, { as: "workers", foreignKey: "managerId" });
+User.hasMany(User, {
+  as: "workers",
+  foreignKey: "managerId",
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
+
 User.belongsTo(User, { as: "manager", foreignKey: "managerId" });
 
 User.hasMany(Attendance, {
@@ -70,7 +78,29 @@ User.hasMany(Attendance, {
   foreignKey: "userId",
   onDelete: "CASCADE",
 });
-Attendance.belongsTo(User, { as: "employee", foreignKey: "userId" });
+Attendance.belongsTo(User, {
+  foreignKey: "userId",
+});
+
+AttendancePolicy.hasMany(User, {
+  foreignKey: "attendancePolicyId",
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
+
+User.belongsTo(AttendancePolicy, {
+  foreignKey: "attendancePolicyId",
+});
+
+AttendancePolicy.hasOne(OvertimePolicy, {
+  foreignKey: "attendancePolicyId",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+
+OvertimePolicy.belongsTo(AttendancePolicy, {
+  foreignKey: "attendancePolicyId",
+});
 
 export {
   User,
@@ -82,4 +112,6 @@ export {
   Account,
   Expenses,
   Attendance,
+  AttendancePolicy,
+  OvertimePolicy,
 };

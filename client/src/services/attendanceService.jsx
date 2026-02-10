@@ -34,3 +34,15 @@ export const punchOut = async () => {
     };
   }
 };
+
+export const getTodayAttendance = async () => {
+  try {
+    const { data } = await API.get("/attendance/today");
+    return data;
+  } catch (e) {
+    return {
+      success: false,
+      message: e.response?.data?.message || "Status fetch failed",
+    };
+  }
+};
