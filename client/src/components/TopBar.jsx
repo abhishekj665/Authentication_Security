@@ -55,6 +55,8 @@ export default function Topbar({ open, setOpen }) {
     }
   };
   const handlePunch = async () => {
+    toast.info("Punch in feature now in undergoing in development coming soon");
+    return;
     if (punch) {
       const response = await punchOut();
 
