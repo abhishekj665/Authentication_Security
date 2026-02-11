@@ -9,6 +9,7 @@ import Account from "./Account.model.js";
 import Attendance from "./Attendance.model.js";
 import AttendancePolicy from "./AttendancePolicy.model.js";
 import OvertimePolicy from "./OvertimePolicy.js";
+import AttendanceRequest from "./AttendanceRequest.model.js";
 
 User.hasMany(UserIP, { foreignKey: "userId" });
 UserIP.belongsTo(User, { foreignKey: "userId" });
@@ -80,6 +81,20 @@ User.hasMany(Attendance, {
 });
 Attendance.belongsTo(User, {
   foreignKey: "userId",
+});
+
+Attendance.hasMany(AttendanceRequest, {
+  foreignKey: "attendanceId",
+  onDelete: "CASCADE",
+  onUpdate: "CASCADE",
+});
+
+AttendancePolicy.belongsTo(User, {
+  foreignKey: "requestedBy",
+});
+
+AttendancePolicy.belongsTo(User, {
+  foreignKey: "approvedBy",
 });
 
 AttendancePolicy.hasMany(User, {

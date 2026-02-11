@@ -3,19 +3,19 @@ import { env } from "./env.js";
 import e from "express";
 
 export const sequelize = new Sequelize(
-  "projectdb",
-  "root",
-  "Abhishek@123",
+  env.db_name,
+  env.db_user,
+  env.db_password,
   {
-    host: "localhost",
-    port: 3306,
+    host: env.db_host,
+    port: Number(env.db_port),
     dialect: "mysql",
-    // dialectOptions: {
-    //   ssl: {
-    //     require: true,
-    //     rejectUnauthorized: false,
-    //   },
-    // },
+    dialectOptions: {
+      ssl: {
+        require: true,
+        rejectUnauthorized: false,
+      },
+    },
     logging: false,
   },
 );
