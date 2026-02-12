@@ -1,6 +1,5 @@
 import { Sequelize } from "sequelize";
 import { env } from "./env.js";
-import e from "express";
 
 export const sequelize = new Sequelize(
   env.db_name,

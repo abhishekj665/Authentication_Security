@@ -53,7 +53,7 @@ const Attendance = sequelize.define(
   },
   {
     timestamps: true,
-    tableName: "Attendance",
+    tableName: "Attendances",
     paranoid: true,
   },
 );
