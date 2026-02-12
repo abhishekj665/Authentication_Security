@@ -10,8 +10,8 @@ const AttendancePolicy = sequelize.define(
       defaultValue: DataTypes.UUIDV4,
       allowNull: false,
     },
-    shiftType : {
-      type : DataTypes.ENUM("SAMEDAY", "OVERNIGHT")
+    shiftType: {
+      type: DataTypes.ENUM("SAMEDAY", "OVERNIGHT"),
     },
     createdBy: {
       type: DataTypes.UUID,
@@ -58,12 +58,16 @@ const AttendancePolicy = sequelize.define(
       type: DataTypes.JSON,
       allowNull: true,
     },
+    policySnapshot: {
+      type: DataTypes.JSON,
+      allowNull: true,
+    },
   },
   {
     timestamps: true,
     tableName: "AttendancePolicy",
     paranoid: true,
-    indexes: [{ fields: ["startTime", "endTime", "isDefault"] }],
+    
   },
 );
 

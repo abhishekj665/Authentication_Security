@@ -1,5 +1,10 @@
 import STATUS from "../../constants/Status.js";
-import { Attendance, User } from "../../models/Associations.model.js";
+import {
+  Attendance,
+  AttendanceLog,
+  AttendanceRequest,
+  User,
+} from "../../models/Associations.model.js";
 import {
   AttendancePolicy,
   OvertimePolicy,
@@ -7,18 +12,34 @@ import {
 
 import ExpressError from "../../utils/Error.utils.js";
 import { Op } from "sequelize";
+import { sequelize } from "../../config/db.js";
 
-export const registerInService = async (userId) => {
+export const registerInService = async (userId, { data }, ipAddress) => {
+  const transaction = await sequelize.transaction();
+
+  const latitute = data.lat;
+  const longitude = data.lng;
+
   try {
     const user = await User.findByPk(userId, {
-      include: {
-        model: AttendancePolicy,
-        include: OvertimePolicy,
-      },
+      include: [
+        {
+          model: AttendancePolicy,
+          include: [{ model: OvertimePolicy }],
+        },
+      ],
+      transaction,
     });
 
     if (!user || !user.AttendancePolicy) {
       throw new ExpressError(STATUS.BAD_REQUEST, "Policy not assigned");
+    }
+
+    if (!user.managerId && user.role === "user") {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "You don't have an assigned manager so you can't punch in",
+      );
     }
 
     const policy = user.AttendancePolicy;
@@ -49,6 +70,7 @@ export const registerInService = async (userId) => {
         userId,
         punchInAt: { [Op.between]: [start, end] },
       },
+      transaction,
     });
 
     if (row && row.lastInAt) {
@@ -62,13 +84,60 @@ export const registerInService = async (userId) => {
     const isLate = lateMin > (policy.graceLateMinute || 0);
 
     if (!row) {
-      row = await Attendance.create({
-        userId,
-        punchInAt: now,
-        lastInAt: now,
-        workedMinutes: 0,
-        isLate,
-      });
+      row = await Attendance.create(
+        {
+          userId,
+          punchInAt: now,
+          lastInAt: now,
+          workedMinutes: 0,
+          isLate,
+        },
+        { transaction },
+      );
+
+      await AttendanceLog.create(
+        {
+          userId,
+          attendanceId: row.id,
+          punchType: "IN",
+          punchTimeUTC: now,
+          source: "WEB",
+          geoLongitude: longitude,
+          geoLatitude: latitute,
+          ipAddress: ipAddress,
+        },
+        { transaction },
+      );
+
+      if (user.role == "user") {
+        await AttendanceRequest.create(
+          {
+            attendanceId: row.id,
+            requestType: "REGULARIZATION",
+            requestedBy: userId,
+            requestedTo: user.managerId,
+            status: "PENDING",
+          },
+          { transaction },
+        );
+      } else if (user.role == "manager") {
+        const admin = await User.findOne({
+          where: { role: "admin" },
+          attributes: ["id"],
+        });
+        await AttendanceRequest.create(
+          {
+            attendanceId: row.id,
+            requestType: "REGULARIZATION",
+            requestedBy: userId,
+            requestedTo: admin.id,
+            status: "PENDING",
+          },
+          { transaction },
+        );
+      }
+
+      await transaction.commit();
 
       return {
         success: true,
@@ -80,7 +149,24 @@ export const registerInService = async (userId) => {
     row.lastInAt = now;
     if (isLate) row.isLate = true;
 
-    await row.save();
+    await row.save({ transaction });
+
+    await AttendanceLog.create(
+      {
+        userId,
+        attendanceId: row?.id || null,
+        punchType: "IN",
+        punchTimeUTC: now,
+        source: "WEB",
+
+        geoLongitude: longitude,
+        geoLatitude: latitute,
+        ipAddress: ipAddress,
+      },
+      { transaction },
+    );
+
+    await transaction.commit();
 
     return {
       success: true,
@@ -88,21 +174,39 @@ export const registerInService = async (userId) => {
       data: row.punchInAt,
     };
   } catch (e) {
+    await transaction.rollback();
     throw new ExpressError(STATUS.BAD_REQUEST, e.message);
   }
 };
 
-export const registerOutService = async (userId) => {
+export const registerOutService = async (userId, { data }, ipAddress) => {
+  const transaction = await sequelize.transaction();
+  const latitute = data.lat;
+  const longitude = data.lng;
   try {
-    const user = await User.findByPk(userId, {
-      include: {
-        model: AttendancePolicy,
-        include: OvertimePolicy,
+    const user = await User.findByPk(
+      userId,
+
+      {
+        include: [
+          {
+            model: AttendancePolicy,
+            include: [{ model: OvertimePolicy }],
+          },
+        ],
+        transaction,
       },
-    });
+    );
 
     if (!user || !user.AttendancePolicy) {
       throw new ExpressError(STATUS.BAD_REQUEST, "Policy not assigned");
+    }
+
+    if (!user.managerId && user.role === "user") {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "You don't have an assigned manager so you can't punch out",
+      );
     }
 
     const policy = user.AttendancePolicy;
@@ -119,6 +223,7 @@ export const registerOutService = async (userId) => {
         userId,
         punchInAt: { [Op.between]: [start, end] },
       },
+      transaction,
     });
 
     if (!row || !row.lastInAt) {
@@ -151,7 +256,23 @@ export const registerOutService = async (userId) => {
       }
     }
 
-    await row.save();
+    await row.save({ transaction });
+
+    await AttendanceLog.create(
+      {
+        userId,
+        attendanceId: row.id,
+        punchType: "OUT",
+        punchTimeUTC: now,
+        source: "WEB",
+        geoLatitude: latitute,
+        geoLongitude: longitude,
+        ipAddress: ipAddress,
+      },
+      { transaction },
+    );
+
+    await transaction.commit();
 
     return {
       success: true,
@@ -164,6 +285,7 @@ export const registerOutService = async (userId) => {
       },
     };
   } catch (e) {
+    await transaction.rollback();
     throw new ExpressError(STATUS.BAD_REQUEST, e.message);
   }
 };

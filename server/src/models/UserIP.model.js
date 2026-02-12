@@ -42,5 +42,4 @@ const UserIP = sequelize.define("UserIP", {
   },
 });
 
-await UserIP.sync();
 export default UserIP;

@@ -4,10 +4,10 @@ import ExpressError from "../../utils/Error.utils.js";
 import STATUS from "../../constants/Status.js";
 import { sequelize } from "../../config/db.js";
 
-export const createAttendancePolicy = async (userId, data) => {
+export const createAttendancePolicy = async (userId, { data }) => {
   const t = await sequelize.transaction();
   try {
-    const { overtimePolicy, ...attendancePolicy } = data;
+    const { attendancePolicy, overtimePolicy } = data;
 
     const existing = await AttendancePolicy.count();
 
@@ -17,6 +17,8 @@ export const createAttendancePolicy = async (userId, data) => {
         "Attendance policy already exists. Update instead of creating.",
       );
     }
+
+    console.log(attendancePolicy);
 
     const shiftType = attendancePolicy.shiftType.toUpperCase();
     const endTime = attendancePolicy.endTime;
@@ -48,21 +50,23 @@ export const createAttendancePolicy = async (userId, data) => {
       },
     );
 
-    if (overtimePolicy.overtimeMinutes < 0) {
-      throw new ExpressError(
-        STATUS.BAD_REQUEST,
-        "Overtime Less than 0 not allowed",
-      );
-    }
+    if (overtimePolicy) {
+      if (overtimePolicy.overtimeMinutes < 0) {
+        throw new ExpressError(
+          STATUS.BAD_REQUEST,
+          "Overtime less than 0 not allowed",
+        );
+      }
 
-    if (overtimePolicy.enable) {
-      await OvertimePolicy.create(
-        {
-          ...overtimePolicy,
-          attendancePolicyId: attendance.id,
-        },
-        { transaction: t },
-      );
+      if (overtimePolicy.enable) {
+        await OvertimePolicy.create(
+          {
+            ...overtimePolicy,
+            attendancePolicyId: attendance.id,
+          },
+          { transaction: t },
+        );
+      }
     }
 
     await t.commit();
@@ -74,7 +78,7 @@ export const createAttendancePolicy = async (userId, data) => {
     return {
       success: true,
       data: policyData,
-      message: "Attendance and Overtime Policy Created",
+      message: "Attendance Policy Created",
     };
   } catch (error) {
     await t.rollback();
@@ -89,7 +93,7 @@ export const getAttendancePolicies = async () => {
       include: [OvertimePolicy],
     });
 
-    if (!policyData.length) {
+    if (!policyData) {
       return { success: false, message: "Attendance Policy Data Not Found" };
     }
 
@@ -123,14 +127,15 @@ export const getAttendancePolicies = async () => {
 //   }
 // };
 
-export const updateAttendancePolicy = async (id, data) => {
+export const updateAttendancePolicy = async (id, { data }) => {
+  console.log(id);
   const t = await sequelize.transaction();
   try {
-    const { overtimePolicy, ...attendanceData } = data;
+    const { attendancePolicy, overtimePolicy } = data;
 
-    const shiftType = attendanceData.shiftType.toUpperCase();
-    const endTime = attendanceData.endTime;
-    const startTime = attendanceData.startTime;
+    const shiftType = attendancePolicy.shiftType.toUpperCase();
+    const endTime = attendancePolicy.endTime;
+    const startTime = attendancePolicy.startTime;
 
     if (shiftType === "SAMEDAY" && endTime <= startTime) {
       throw new Error("Invalid same-day shift time range");
@@ -140,14 +145,14 @@ export const updateAttendancePolicy = async (id, data) => {
       throw new Error("Overnight shift must end next day");
     }
 
-    if (attendancePolicy.startTime == attendanceData.endTime) {
+    if (attendancePolicy.startTime == attendancePolicy.endTime) {
       throw new ExpressError(
         STATUS.BAD_REQUEST,
         "Same Start and End time not allwoed",
       );
     }
 
-    const [affectedRows] = await AttendancePolicy.update(attendanceData, {
+    const [affectedRows] = await AttendancePolicy.update(attendancePolicy, {
       where: { id },
       transaction: t,
     });

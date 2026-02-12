@@ -61,7 +61,7 @@ export const logIn = async (req, res, next) => {
     const ip =
       req.headers["x-forwarded-for"]?.split(",")[0] || req.socket.remoteAddress;
 
-    const ipData = await getLocationFromIp("8.8.8.8");
+    const ipData = await getLocationFromIp(ip);
 
     await UserIP.create({
       userAgent: req.headers["user-agent"] || "unknown",

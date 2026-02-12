@@ -1,8 +1,9 @@
 import express from "express";
-import { adminAuth } from "../../middlewares/auth.middleware.js";
 import * as attendanceController from "../../controllers/admin/attendance.controller.js";
 
 const Router = express.Router();
+
+Router.get("/attendance/all", attendanceController.getAllAttendanceData);
 
 Router.get("/attendance/user", attendanceController.getUserAttendanceData);
 Router.get(

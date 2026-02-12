@@ -16,6 +16,12 @@ import {
   Chip,
 } from "@mui/material";
 import { TimePicker } from "@mui/x-date-pickers/TimePicker";
+import {
+  registerAttendancePolicy,
+  updateAttendancePolicy,
+} from "../../services/attendanceService";
+import { toast } from "react-toastify";
+import { getAttendancePolicy } from "../../services/attendanceService";
 
 const weekendDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
@@ -36,10 +42,13 @@ const initialForm = {
   overtimeMinutes: "",
 };
 
-export default function AttendancePolicyDialog({ onClose, onSubmit }) {
+export default function AttendancePolicyDialog() {
   const [form, setForm] = useState(initialForm);
   const [submitting, setSubmitting] = useState(false);
   const [open, setOpen] = useState(false);
+  const [id , setID] = useState(null);
+
+  const [policy, setPolicy] = useState(false);
 
   const update = (k, v) => setForm((p) => ({ ...p, [k]: v }));
 
@@ -54,11 +63,36 @@ export default function AttendancePolicyDialog({ onClose, onSubmit }) {
     update("weekends", [...s]);
   };
 
+  const getPolicyData = async () => {
+    try {
+      const response = await getAttendancePolicy();
+      console.log(response.data, "reponse");
+      if (response.success) {
+        const data = response.data || {};
+
+        setPolicy(true);
+        setForm({
+          ...initialForm,
+          ...data,
+          weekends: data.weekends || [],
+          isDefault: !!data.isDefault,
+          overtimeEnable: !!data.overtimeEnable,
+        });
+        setID(data.id)
+      } else {
+        setPolicy(false);
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     if (!open) {
       setForm(initialForm);
       setSubmitting(false);
     }
+    getPolicyData();
   }, [open]);
 
   const section = (title, desc, children) => (
@@ -76,7 +110,7 @@ export default function AttendancePolicyDialog({ onClose, onSubmit }) {
   const handleSubmit = async () => {
     setSubmitting(true);
 
-    const attendancePayload = {
+    const attendancePolicy = {
       shiftType: form.shiftType,
       isDefault: form.isDefault,
       startTime: form.startTime,
@@ -90,13 +124,33 @@ export default function AttendancePolicyDialog({ onClose, onSubmit }) {
       weekends: form.weekends,
     };
 
-    const overtimePayload = {
+    const overtimePolicy = {
       enable: form.overtimeEnable,
       overtimeHours: form.overtimeHours || null,
       overtimeMinutes: Number(form.overtimeMinutes || 0),
     };
 
-    await onSubmit({ attendancePayload, overtimePayload });
+    let response = {};
+
+    if (policy) {
+      response = await updateAttendancePolicy({
+        attendancePolicy,
+        overtimePolicy,
+        id
+        
+      });
+    } else {
+      response = await registerAttendancePolicy({
+        attendancePolicy,
+        overtimePolicy,
+      });
+    }
+    if (response.success) {
+      toast.success(response?.message);
+      setOpen(false);
+    } else {
+      toast.error(response.message);
+    }
     setSubmitting(false);
   };
 
@@ -108,7 +162,7 @@ export default function AttendancePolicyDialog({ onClose, onSubmit }) {
         color="primary"
         onClick={() => setOpen(true)}
       >
-        Create Attendance Policy
+        {policy ? "Update Attendance Policy" : "Create Attendance Policy"}
       </Button>
       <Dialog
         open={open}
@@ -117,7 +171,7 @@ export default function AttendancePolicyDialog({ onClose, onSubmit }) {
         fullWidth
       >
         <DialogTitle className="text-2xl font-bold">
-          Create Attendance Policy
+          {policy ? "Update Attendance Policy" : "Create Attendance Policy"}
           <Typography variant="body2" className="text-gray-500 mt-2">
             Configure shift, grace limits, weekends, and overtime rules
           </Typography>
@@ -231,8 +285,8 @@ export default function AttendancePolicyDialog({ onClose, onSubmit }) {
                   key={d}
                   label={d}
                   clickable
-                  color={form.weekends.includes(d) ? "primary" : "default"}
-                  variant={form.weekends.includes(d) ? "filled" : "outlined"}
+                  color={form.weekends?.includes(d) ? "primary" : "default"}
+                  variant={form.weekends?.includes(d) ? "filled" : "outlined"}
                   onClick={() => toggleWeekend(d)}
                 />
               ))}
@@ -280,8 +334,12 @@ export default function AttendancePolicyDialog({ onClose, onSubmit }) {
           <Button onClick={() => setOpen(false)} disabled={submitting}>
             Cancel
           </Button>
-          <Button variant="contained" onClick={handleSubmit} disabled={true}>
-            {submitting ? "Saving..." : "Create Policy"}
+          <Button
+            variant="contained"
+            onClick={handleSubmit}
+            disabled={submitting}
+          >
+            {submitting ? "Saving..." : policy ? "Update" : "Create"}
           </Button>
         </DialogActions>
       </Dialog>

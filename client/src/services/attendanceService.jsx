@@ -1,11 +1,12 @@
 import { API } from "../services/authService";
 
-export const punchIn = async () => {
+export const punchIn = async (data) => {
   try {
     const response = await API.post("/attendance/in", {
       withCredentials: true,
+      data,
     });
-    
+
     return response.data;
   } catch (error) {
     return {
@@ -18,10 +19,11 @@ export const punchIn = async () => {
   }
 };
 
-export const punchOut = async () => {
+export const punchOut = async (data) => {
   try {
     const response = await API.put("/attendance/out", {
       withCredentials: true,
+      data,
     });
     return response.data;
   } catch (error) {
@@ -43,6 +45,51 @@ export const getTodayAttendance = async () => {
     return {
       success: false,
       message: e.response?.data?.message || "Status fetch failed",
+    };
+  }
+};
+
+export const registerAttendancePolicy = async (data) => {
+  try {
+    let response = await API.post("/attendance-policy", {
+      data: data,
+    });
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
+};
+
+export const updateAttendancePolicy = async (data, id) => {
+  try {
+    let response = await API.put(`/attendance-policy/${id}`, {
+      data: data,
+    });
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
+};
+
+export const getAttendancePolicy = async (data) => {
+  try {
+    let response = await API.get("/attendance-policy", {
+      data: data,
+    });
+
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
     };
   }
 };

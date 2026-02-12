@@ -14,6 +14,10 @@ const AttendanceRequest = sequelize.define(
       type: DataTypes.UUID,
       allowNull: false,
     },
+    requestType: {
+      type: DataTypes.ENUM("CORRECTION", "OVERTIME", "REGULARIZATION"),
+      allowNull: false,
+    },
     requestedBy: {
       type: DataTypes.UUID,
       allowNull: false,
@@ -26,11 +30,11 @@ const AttendanceRequest = sequelize.define(
       type: DataTypes.TEXT,
       allowNull: true,
     },
-    approvedBy: {
+    reviewedBy: {
       type: DataTypes.UUID,
       allowNull: true,
     },
-    approvedAt: {
+    reviewedAt: {
       type: DataTypes.DATE,
       allowNull: true,
     },
@@ -43,7 +47,6 @@ const AttendanceRequest = sequelize.define(
     timestamps: true,
     tableName: "AttendanceRequest",
     paranoid: true,
-    indexes: [{ fields: ["attendanceId", "requestedBy", "requestedTo"] }],
   },
 );
 

@@ -59,9 +59,7 @@ const Expense = sequelize.define(
   {
     tableName: "expenses",
     timestamps: true,
-    indexes : [
-      {fields : ["id", "userId", "status"]}
-    ]
+    
   }
 );
 

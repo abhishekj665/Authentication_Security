@@ -1,10 +1,10 @@
 import STATUS from "../../constants/Status.js";
-import { Attendance } from "../../models/Associations.model.js";
+import { Attendance, AttendanceRequest } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 
 export const getAttendance = async (userId) => {
   try {
-    const attendanceData = await Attendance.findAll({
+    const attendanceData = await AttendanceRequest.findAll({
       where: { userId: userId },
     });
 
@@ -24,8 +24,8 @@ export const getAttendance = async (userId) => {
 
 export const pendingAttendanceRequests = async (userId) => {
   try {
-    const attendanceData = await Attendance.findAll({
-      where: { userId: userId, isApproved: "PENDING" },
+    const attendanceData = await AttendanceRequest.findAll({
+      where: { requestedBy: userId, status: "PENDING" },
     });
 
     if (!attendanceData) {
@@ -47,8 +47,8 @@ export const pendingAttendanceRequests = async (userId) => {
 
 export const approvedAttendanceRequest = async (userId) => {
   try {
-    const attendanceData = await Attendance.findAll({
-      where: { userId: userId, isApproved: "APPROVED" },
+    const attendanceData = await AttendanceRequest.findAll({
+      where: { requestedBy: userId, status: "APPROVED" },
     });
 
     if (!attendanceData) {
@@ -67,8 +67,8 @@ export const approvedAttendanceRequest = async (userId) => {
 
 export const rejectedAttendanceRequest = async (userId) => {
   try {
-    const attendanceData = await Attendance.findAll({
-      where: { userId: userId, isApproved: "REJECTED" },
+    const attendanceData = await AttendanceRequest.findAll({
+      where: { requestedBy: userId, status: "REJECTED" },
     });
 
     if (!attendanceData) {

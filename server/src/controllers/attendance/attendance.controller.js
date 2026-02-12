@@ -1,10 +1,17 @@
 import STATUS from "../../constants/Status.js";
 import * as attendanceServices from "../../services/attendance/attendance.service.js";
+import { getIP } from "../../utils/getIP.utils.js";
 import { errorResponse, successResponse } from "../../utils/response.utils.js";
 
 export const registerInController = async (req, res, next) => {
   try {
-    const response = await attendanceServices.registerInService(req.user.id);
+    const ipAddress = getIP(req);
+
+    const response = await attendanceServices.registerInService(
+      req.user.id,
+      req.body,
+      ipAddress
+    );
 
     if (response.success) {
       return successResponse(
@@ -23,7 +30,9 @@ export const registerInController = async (req, res, next) => {
 
 export const registerOutController = async (req, res, next) => {
   try {
-    const response = await attendanceServices.registerOutService(req.user.id);
+    const ipAddress = getIP(req);
+
+    const response = await attendanceServices.registerOutService(req.user.id, req.body, ipAddress);
 
     if (response.success) {
       return successResponse(

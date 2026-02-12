@@ -7,7 +7,7 @@ const OvertimePolicy = sequelize.define(
     id: {
       type: DataTypes.UUID,
       allowNull: false,
-      defaultValue : UUIDV4,
+      defaultValue: UUIDV4,
       primaryKey: true,
     },
     overtimeHours: {
@@ -31,7 +31,6 @@ const OvertimePolicy = sequelize.define(
     timestamps: true,
     tableName: "OvertimePolicy",
     paranoid: true,
-    indexes: [{ fields: ["attendancePolicyId"] }],
   },
 );
 

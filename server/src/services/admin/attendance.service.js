@@ -1,11 +1,53 @@
 import STATUS from "../../constants/Status.js";
-import { Attendance, User } from "../../models/Associations.model.js";
+import {
+  Attendance,
+  AttendanceRequest,
+  User,
+} from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
+
+export const getAllAttendance = async () => {
+  try {
+    const attendanceData = await AttendanceRequest.findAll({
+      attributes: ["id", "reviewedBy", "status"],
+      include: [
+        {
+          model: Attendance,
+          attributes: [
+            "id",
+            "punchInAt",
+            "punchOutAt",
+            "workedMinutes",
+            "breakMinutes",
+          ],
+        },
+      ],
+    });
+
+    if (!attendanceData) {
+      throw new ExpressError(STATUS.BAD_REQUEST, "No Attendance Data Found");
+    }
+
+    return {
+      success: true,
+      data: attendanceData,
+    };
+  } catch (error) {
+    throw error;
+  }
+};
 
 export const getUserAttendance = async () => {
   try {
-    const attendanceData = await Attendance.findAll({
-      include: [{ model: User, where: { role: "user" }, attributes : ["id", "role", "isVerified"]  }],
+    const attendanceData = await AttendanceRequest.findAll({
+      include: [
+        {
+          model: User,
+          where: { role: "user" },
+          attributes: ["id", "role", "isVerified"],
+          as: "requester",
+        },
+      ],
     });
 
     if (!attendanceData) {
@@ -23,8 +65,8 @@ export const getUserAttendance = async () => {
 
 export const getManagerAttendance = async () => {
   try {
-    const attendanceData = await Attendance.findAll({
-      include: [{ model: User, where: { role: "manager" } }],
+    const attendanceData = await AttendanceRequest.findAll({
+      include: [{ model: User, where: { role: "manager" }, as: "requester" }],
     });
 
     if (!attendanceData) {
@@ -42,9 +84,16 @@ export const getManagerAttendance = async () => {
 
 export const pendingUserAttendanceRequests = async () => {
   try {
-    const attendanceData = await Attendance.findAll({
-      where: { isApproved: "PENDING" },
-      include: [{ model: User, where: { role: "user" }, attributes : ["id", "role", "isVerified"]  }],
+    const attendanceData = await AttendanceRequest.findAll({
+      where: { status: "PENDING" },
+      include: [
+        {
+          model: User,
+          where: { role: "user" },
+          attributes: ["id", "role", "isVerified"],
+          as: "requester",
+        },
+      ],
     });
 
     if (!attendanceData) {
@@ -66,9 +115,16 @@ export const pendingUserAttendanceRequests = async () => {
 
 export const pendingManagerAttendanceRequests = async () => {
   try {
-    const attendanceData = await Attendance.findAll({
-      where: { isApproved: "PENDING" },
-      include: [{ model: User, where: { role: "manager" }, attributes : ["id", "role", "isVerified"]  }],
+    const attendanceData = await AttendanceRequest.findAll({
+      where: { status: "PENDING" },
+      include: [
+        {
+          model: User,
+          where: { role: "manager" },
+          attributes: ["id", "role", "isVerified"],
+          as: "requester",
+        },
+      ],
     });
 
     if (!attendanceData) {
@@ -90,11 +146,9 @@ export const pendingManagerAttendanceRequests = async () => {
 
 export const approvedUserAttendanceRequest = async () => {
   try {
-    const attendanceData = await Attendance.findAll({
-      where: { isApproved: "APPROVED" },
-      include : [
-        {model : User, where : {role : "user"}}
-      ]
+    const attendanceData = await AttendanceRequest.findAll({
+      where: { status: "APPROVED" },
+      include: [{ model: User, where: { role: "user" }, as: "requester" }],
     });
 
     if (!attendanceData) {
@@ -113,11 +167,9 @@ export const approvedUserAttendanceRequest = async () => {
 
 export const approvedManagerAttendanceRequest = async () => {
   try {
-    const attendanceData = await Attendance.findAll({
-      where: { isApproved: "APPROVED" },
-      include : [
-        {model : User, where : {role : "manager"}}
-      ]
+    const attendanceData = await AttendanceRequest.findAll({
+      where: { status: "APPROVED" },
+      include: [{ model: User, where: { role: "manager" }, as: "requester" }],
     });
 
     if (!attendanceData) {
@@ -136,9 +188,9 @@ export const approvedManagerAttendanceRequest = async () => {
 
 export const rejectedUserAttendanceRequest = async () => {
   try {
-    const attendanceData = await Attendance.findAll({
-      where: { isApproved: "REJECTED" },
-      include: [{ model: User, where: { role: "user" } }],
+    const attendanceData = await AttendanceRequest.findAll({
+      where: { status: "REJECTED" },
+      include: [{ model: User, where: { role: "user" }, as: "requester" }],
     });
 
     if (!attendanceData) {
@@ -157,9 +209,9 @@ export const rejectedUserAttendanceRequest = async () => {
 
 export const rejectedManagerAttendanceRequest = async () => {
   try {
-    const attendanceData = await Attendance.findAll({
-      where: { isApproved: "REJECTED" },
-      include: [{ model: User, where: { role: "manager" } }],
+    const attendanceData = await AttendanceRequest.findAll({
+      where: { status: "REJECTED" },
+      include: [{ model: User, where: { role: "manager" }, as: "requester" }],
     });
 
     if (!attendanceData) {
@@ -176,18 +228,24 @@ export const rejectedManagerAttendanceRequest = async () => {
   }
 };
 
-export const approveAttendanceRequest = async (managerId, id) => {
+export const approveAttendanceRequest = async (adminId, id) => {
   try {
-    const attendanceData = await Attendance.findOne({
-      where: { id: id, isApproved: "PENDING" },
+    const attendanceData = await AttendanceRequest.findOne({
+      where: {
+        id: id,
+        status: "PENDING",
+        requestedTo: adminId,
+        as: "approver",
+      },
     });
 
     if (!attendanceData) {
       throw new ExpressError(STATUS.BAD_REQUEST, "Data Not Found");
     }
 
-    attendanceData.isApproved = "APPROVED";
-    attendanceData.verifiedBy = managerId;
+    attendanceData.status = "APPROVED";
+    attendanceData.reviewedBy = adminId;
+    attendanceData.reviewedAt = new Date();
 
     await attendanceData.save();
 
@@ -201,18 +259,24 @@ export const approveAttendanceRequest = async (managerId, id) => {
   }
 };
 
-export const rejectAttendanceRequest = async (managerId, id) => {
+export const rejectAttendanceRequest = async (adminId, id) => {
   try {
-    const attendanceData = await Attendance.findOne({
-      where: { id: id, isApproved: "PENDING" },
+    const attendanceData = await AttendanceRequest.findOne({
+      where: {
+        id: id,
+        isApproved: "PENDING",
+        requestedTo: adminId,
+        as: "approver",
+      },
     });
 
     if (!attendanceData) {
       throw new ExpressError(STATUS.BAD_REQUEST, "No Data Found");
     }
 
-    ((attendanceData.isApproved = "REJECTED"),
-      (attendanceData.verifiedBy = managerId));
+    attendanceData.status = "REJECTED";
+    attendanceData.reviewedBy = adminId;
+    attendanceData.reviewedAt = new Date();
 
     await attendanceData.save();
 

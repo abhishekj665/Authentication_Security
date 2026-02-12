@@ -1,7 +1,6 @@
 import { API } from "../services/authService";
 
 export const getUser = async (page, limit, search) => {
-
   try {
     const response = await API.get(
       `/admin/users?page=${page}&limit=${limit}&search=${search}`,
@@ -266,6 +265,18 @@ export const registerUser = async (data) => {
 export const getAllIps = async () => {
   try {
     let response = await API.get("/admin/ips");
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
+};
+
+export const getAllAttendanceData = async () => {
+  try {
+    let response = await API.get("/admin/attendance/all");
     return response.data;
   } catch (error) {
     return {

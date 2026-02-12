@@ -10,6 +10,9 @@ import Attendance from "./Attendance.model.js";
 import AttendancePolicy from "./AttendancePolicy.model.js";
 import OvertimePolicy from "./OvertimePolicy.js";
 import AttendanceRequest from "./AttendanceRequest.model.js";
+import AttendanceLog from "./AttendanceLog.model.js";
+
+// USER ↔ BASIC SECURITY
 
 User.hasMany(UserIP, { foreignKey: "userId" });
 UserIP.belongsTo(User, { foreignKey: "userId" });
@@ -17,8 +20,35 @@ UserIP.belongsTo(User, { foreignKey: "userId" });
 User.hasMany(OTP, { foreignKey: "userId" });
 OTP.belongsTo(User, { foreignKey: "userId" });
 
+User.hasOne(Account, {
+  foreignKey: "userId",
+  onDelete: "CASCADE",
+});
+Account.belongsTo(User, {
+  foreignKey: "userId",
+});
+
+// USER ↔ HIERARCHY
+
+User.hasMany(User, {
+  as: "workers",
+  foreignKey: "managerId",
+  onDelete: "SET NULL",
+  onUpdate: "CASCADE",
+});
+
+User.belongsTo(User, {
+  as: "manager",
+  foreignKey: "managerId",
+});
+
+// USER ↔ ASSETS
+
 User.hasMany(AssetRequest, { foreignKey: "userId" });
 AssetRequest.belongsTo(User, { foreignKey: "userId" });
+
+User.hasMany(AssetRequest, { foreignKey: "reviewedBy" });
+AssetRequest.belongsTo(User, { foreignKey: "reviewedBy", as: "reviewer" });
 
 User.hasMany(UserAsset, { foreignKey: "userId" });
 UserAsset.belongsTo(User, { foreignKey: "userId" });
@@ -28,7 +58,6 @@ Asset.hasMany(AssetRequest, {
   onDelete: "SET NULL",
   onUpdate: "CASCADE",
 });
-
 AssetRequest.belongsTo(Asset, {
   foreignKey: "assetId",
   onDelete: "SET NULL",
@@ -40,12 +69,13 @@ Asset.hasMany(UserAsset, {
   onDelete: "SET NULL",
   onUpdate: "CASCADE",
 });
-
 UserAsset.belongsTo(Asset, {
   foreignKey: "assetId",
   onDelete: "SET NULL",
   onUpdate: "CASCADE",
 });
+
+// USER ↔ EXPENSES
 
 User.hasMany(Expenses, { foreignKey: "userId" });
 Expenses.belongsTo(User, { foreignKey: "userId", as: "employee" });
@@ -53,35 +83,19 @@ Expenses.belongsTo(User, { foreignKey: "userId", as: "employee" });
 User.hasMany(Expenses, { foreignKey: "reviewedBy" });
 Expenses.belongsTo(User, { foreignKey: "reviewedBy", as: "reviewer" });
 
-User.hasMany(AssetRequest, { foreignKey: "reviewedBy" });
-AssetRequest.belongsTo(User, { foreignKey: "reviewedBy", as: "reviewer" });
-
-User.hasOne(Account, {
-  foreignKey: "userId",
-  onDelete: "CASCADE",
-});
-
-Account.belongsTo(User, {
-  foreignKey: "userId",
-});
-
-User.hasMany(User, {
-  as: "workers",
-  foreignKey: "managerId",
-  onDelete: "SET NULL",
-  onUpdate: "CASCADE",
-});
-
-User.belongsTo(User, { as: "manager", foreignKey: "managerId" });
+// USER ↔ ATTENDANCE
 
 User.hasMany(Attendance, {
   as: "employee",
   foreignKey: "userId",
   onDelete: "CASCADE",
 });
+
 Attendance.belongsTo(User, {
   foreignKey: "userId",
 });
+
+// ATTENDANCE ↔ REQUESTS
 
 Attendance.hasMany(AttendanceRequest, {
   foreignKey: "attendanceId",
@@ -89,23 +103,80 @@ Attendance.hasMany(AttendanceRequest, {
   onUpdate: "CASCADE",
 });
 
-AttendancePolicy.belongsTo(User, {
-  foreignKey: "requestedBy",
+AttendanceRequest.belongsTo(Attendance, {
+  foreignKey: "attendanceId",
 });
 
-AttendancePolicy.belongsTo(User, {
+User.hasMany(AttendanceRequest, {
+  foreignKey: "requestedBy",
+  as: "requestsRaised",
+});
+
+AttendanceRequest.belongsTo(User, {
+  foreignKey: "requestedBy",
+  as: "requester",
+});
+
+User.hasMany(AttendanceRequest, {
+  foreignKey: "reviewedBy",
+  as: "approvedRequests",
+});
+
+AttendanceRequest.belongsTo(User, {
   foreignKey: "approvedBy",
+  as: "approver",
+});
+
+// ATTENDANCE ↔ LOGS
+
+User.hasMany(AttendanceLog, {
+  foreignKey: "userId",
+  as: "punchLogs",
+  onDelete: "CASCADE",
+});
+
+AttendanceLog.belongsTo(User, {
+  foreignKey: "userId",
+  as: "user",
+});
+
+Attendance.hasMany(AttendanceLog, {
+  foreignKey: "attendanceId",
+  as: "logs",
+  onDelete: "SET NULL",
+});
+
+AttendanceLog.belongsTo(Attendance, {
+  foreignKey: "attendanceId",
+  as: "attendance",
+});
+
+User.hasMany(AttendanceLog, {
+  foreignKey: "editedBy",
+  as: "editedLogs",
+});
+
+AttendanceLog.belongsTo(User, {
+  foreignKey: "editedBy",
+  as: "editor",
+});
+
+// POLICY ↔ USER
+AttendancePolicy.belongsTo(User, {
+  foreignKey: "createdBy",
+  as: "creator",
 });
 
 AttendancePolicy.hasMany(User, {
   foreignKey: "attendancePolicyId",
-  onDelete: "SET NULL",
   onUpdate: "CASCADE",
 });
 
 User.belongsTo(AttendancePolicy, {
   foreignKey: "attendancePolicyId",
 });
+
+// POLICY ↔ OVERTIME
 
 AttendancePolicy.hasOne(OvertimePolicy, {
   foreignKey: "attendancePolicyId",
@@ -129,4 +200,6 @@ export {
   Attendance,
   AttendancePolicy,
   OvertimePolicy,
+  AttendanceLog,
+  AttendanceRequest,
 };

@@ -54,7 +54,7 @@ const AssetRequest = sequelize.define(
   {
     paranoid: true,
     timestamps: true,
-    indexes: [{ fields: ["userId", "assetId", "status"] }],
+   
   },
 );
 

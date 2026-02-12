@@ -58,7 +58,7 @@ const Asset = sequelize.define(
   {
     paranoid: true,
     timestamps: true,
-    indexes: [{ fields: ["title"] }],
+    
   },
 );
 

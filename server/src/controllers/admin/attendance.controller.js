@@ -2,6 +2,26 @@ import STATUS from "../../constants/Status.js";
 import * as userAttendanceService from "../../services/admin/attendance.service.js";
 import { errorResponse, successResponse } from "../../utils/response.utils.js";
 
+export const getAllAttendanceData = async (req, res, next) => {
+  try {
+    const response = await userAttendanceService.getAllAttendance();
+
+    if (response.success) {
+      return successResponse(
+        res,
+        response.data,
+        response.message,
+        STATUS.ACCEPTED,
+      );
+    } else {
+      errorResponse(res, response.message, STATUS.BAD_REQUEST);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+
 export const getUserAttendanceData = async (req, res, next) => {
   try {
     const response = await userAttendanceService.getUserAttendance();

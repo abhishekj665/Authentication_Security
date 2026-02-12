@@ -23,6 +23,9 @@ export default function Topbar({ open, setOpen }) {
   const [minutes, setMinutes] = useState(0);
   const [seconds, setSeconds] = useState(0);
 
+  const [lat, setLat] = useState(null);
+  const [lng, setLng] = useState(null);
+
   const setTimer = () => {
     if (!punchInTime) return;
 
@@ -55,10 +58,8 @@ export default function Topbar({ open, setOpen }) {
     }
   };
   const handlePunch = async () => {
-    toast.info("Punch in feature now in undergoing in development coming soon");
-    return;
     if (punch) {
-      const response = await punchOut();
+      const response = await punchOut({lat, lng});
 
       if (!response.success) {
         toast.error(response.message);
@@ -70,7 +71,7 @@ export default function Topbar({ open, setOpen }) {
       return;
     }
 
-    const response = await punchIn();
+    const response = await punchIn({lat, lng});
 
     if (!response.success) {
       toast.error(response.message);
@@ -97,8 +98,33 @@ export default function Topbar({ open, setOpen }) {
     }
   };
 
+  function getLocation() {
+    if (!navigator.geolocation) {
+      console.error("Geolocation not supported");
+      return;
+    }
+
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const latitude = position.coords.latitude;
+        const longitude = position.coords.longitude;
+        setLat(latitude);
+        setLng(longitude);
+      },
+      (error) => {
+        console.error("Location error:", error.message);
+      },
+      {
+        enableHighAccuracy: true,
+        timeout: 10000,
+        maximumAge: 0,
+      },
+    );
+  }
+
   useEffect(() => {
     loadStatus();
+    getLocation();
   }, []);
 
   useEffect(() => {

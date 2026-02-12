@@ -14,14 +14,6 @@ const Attendance = sequelize.define(
       type: DataTypes.UUID,
       allowNull: false,
     },
-    isApproved: {
-      type: DataTypes.ENUM("APPROVED", "REJECTED", "PENDING"),
-      defaultValue: "PENDING",
-    },
-    verifiedBy: {
-      type: DataTypes.UUID,
-      allowNull: true,
-    },
     punchInAt: {
       type: DataTypes.DATE,
       allowNull: true,
@@ -61,8 +53,8 @@ const Attendance = sequelize.define(
   },
   {
     timestamps: true,
+    tableName: "Attendance",
     paranoid: true,
-    indexes: [{ fields: ["userId"] }],
   },
 );
 

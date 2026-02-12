@@ -81,11 +81,18 @@ export default function Sidebar({ open, setOpen }) {
         </NavLink>
 
         <NavLink
-          to="/admin/attendancePolicy"
+          to="/admin/attendance-policy"
           onClick={() => setOpen(false)}
           className={linkClass}
         >
           <WorkHistoryIcon /> Attendance Policy
+        </NavLink>
+        <NavLink
+          to="/admin/attendance"
+          onClick={() => setOpen(false)}
+          className={linkClass}
+        >
+          <WorkHistoryIcon /> Attendance Data
         </NavLink>
       </nav>
     </aside>
