@@ -21,6 +21,7 @@ export const getAllAttendance = async () => {
             "breakMinutes",
           ],
         },
+        { model: User, attributes: ["id", "role", "email"], as: "requester" },
       ],
     });
 

@@ -20,74 +20,73 @@ import { useEffect, useState } from "react";
 import { useMemo } from "react";
 import { getAllAttendanceData } from "../../services/adminService";
 
-
 const statusColor = {
   approved: "success",
   pending: "warning",
   rejected: "error",
 };
 
-const dummyData = [
-  {
-    id: 1,
-    email: "user1@test.com",
-    role: "user",
-    punchIn: "09:05",
-    punchOut: "18:10",
-    lateTime: "5m",
-    graceTime: "10m",
-    overtime: "40m",
-    status: "approved",
-  },
-  {
-    id: 2,
-    email: "manager@test.com",
-    role: "manager",
-    punchIn: "09:20",
-    punchOut: "17:40",
-    lateTime: "20m",
-    graceTime: "10m",
-    overtime: "0m",
-    status: "pending",
-  },
-  {
-    id: 3,
-    email: "user2@test.com",
-    role: "user",
-    punchIn: "09:45",
-    punchOut: "16:30",
-    lateTime: "45m",
-    graceTime: "10m",
-    overtime: "0m",
-    status: "rejected",
-  },
-];
-
 export default function AttendanceTable() {
   const [statusFilter, setStatusFilter] = useState("all");
   const [roleFilter, setRoleFilter] = useState("all");
+  const [rows, setRows] = useState([]);
 
   const filteredRows = useMemo(() => {
-    return dummyData.filter((row) => {
+    return rows.filter((row) => {
       const statusMatch = statusFilter === "all" || row.status === statusFilter;
       const roleMatch = roleFilter === "all" || row.role === roleFilter;
       return statusMatch && roleMatch;
     });
-  }, [statusFilter, roleFilter]);
+  }, [rows, statusFilter, roleFilter]);
 
- 
+  const fmtTime = (iso) =>
+    iso
+      ? new Date(iso).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        })
+      : "-";
 
   useEffect(() => {
     const fetchAttendanceData = async () => {
       try {
-        const data = await getAllAttendanceData();
-        console.log(data);
+        const res = await getAllAttendanceData();
+        console.log(res);
+
+        if (!res?.success || !Array.isArray(res.data)) {
+          setRows([]);
+          return;
+        }
+
+        const mapped = res.data.map((item) => {
+          const a = item.Attendance || {};
+          const u = item.requester || a.User || {};
+
+          return {
+            id: item.id,
+
+            email: u.email || a.email || "-",
+            role: (u.role || "user").toLowerCase(),
+
+            punchIn: fmtTime(a.punchInAt),
+            punchOut: fmtTime(a.punchOutAt),
+
+            lateTime: a.workedMinutes != null ? `${a.workedMinutes}m` : "0m",
+            graceTime: a.breakMinutes != null ? `${a.breakMinutes}m` : "0m",
+            overtime:
+              a.overtimeMinutes != null ? `${a.overtimeMinutes}m` : "0m",
+
+            status: (item.status || "pending").toLowerCase(),
+            reviewedBy: item.reviewedBy,
+          };
+        });
+
+        setRows(mapped);
       } catch (error) {
         console.log(error);
+        setRows([]);
       }
     };
-
-    
 
     fetchAttendanceData();
   }, []);
@@ -98,7 +97,7 @@ export default function AttendanceTable() {
         className="rounded-2xl shadow-none border border-gray-200"
         style={{ padding: "4px" }}
       >
-        <CardContent sx={{ p: 5 }}>
+        <CardContent>
           {/* Header */}
           <Typography variant="h5" className="font-semibold mb-6 ml-5">
             Attendance Dashboard
@@ -152,46 +151,52 @@ export default function AttendanceTable() {
               </TableHead>
 
               <TableBody>
-                {filteredRows.map((row) => (
-                  <TableRow
-                    key={row.id}
-                    hover
-                    className="transition hover:bg-gray-50"
-                  >
-                    <TableCell>{row.email}</TableCell>
-
-                    <TableCell>
-                      <Chip label={row.role.toUpperCase()} size="small" />
-                    </TableCell>
-
-                    <TableCell>{row.punchIn}</TableCell>
-                    <TableCell>{row.punchOut}</TableCell>
-                    <TableCell>{row.lateTime}</TableCell>
-                    <TableCell>{row.graceTime}</TableCell>
-                    <TableCell>{row.overtime}</TableCell>
-
-                    <TableCell>
-                      <Chip
-                        label={row.status.toUpperCase()}
-                        color={statusColor[row.status]}
-                        size="small"
-                      />
-                    </TableCell>
-                    <TableCell>
-                      {row.reviewedBy ? reviewedBy : "Not Reviewed"}
+                {filteredRows.length === 0 ? (
+                  <TableRow>
+                    <TableCell
+                      colSpan={9}
+                      align="center"
+                      className="text-gray-500"
+                    >
+                      No data found
                     </TableCell>
                   </TableRow>
-                ))}
+                ) : (
+                  filteredRows.map((row) => (
+                    <TableRow
+                      key={row.id}
+                      hover
+                      className="transition hover:bg-gray-50"
+                    >
+                      <TableCell>{row.email}</TableCell>
+
+                      <TableCell>
+                        <Chip label={row.role.toUpperCase()} size="small" />
+                      </TableCell>
+
+                      <TableCell>{row.punchIn}</TableCell>
+                      <TableCell>{row.punchOut}</TableCell>
+                      <TableCell>{row.lateTime}</TableCell>
+                      <TableCell>{row.graceTime}</TableCell>
+                      <TableCell>{row.overtime}</TableCell>
+
+                      <TableCell>
+                        <Chip
+                          label={row.status.toUpperCase()}
+                          color={statusColor[row.status]}
+                          size="small"
+                        />
+                      </TableCell>
+
+                      <TableCell>
+                        {row.reviewedBy ? row.reviewedBy : "Not Reviewed"}
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
               </TableBody>
             </Table>
           </TableContainer>
-
-          {/* Empty State */}
-          {filteredRows.length === 0 && (
-            <div className="text-center text-gray-500 mt-6">
-              No attendance records found
-            </div>
-          )}
         </CardContent>
       </Card>
     </div>

@@ -128,7 +128,6 @@ export const getAttendancePolicies = async () => {
 // };
 
 export const updateAttendancePolicy = async (id, { data }) => {
-  console.log(id);
   const t = await sequelize.transaction();
   try {
     const { attendancePolicy, overtimePolicy } = data;
