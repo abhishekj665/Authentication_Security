@@ -7,7 +7,6 @@ import AccessibilityIcon from "@mui/icons-material/Accessibility";
 import LocalMallIcon from "@mui/icons-material/LocalMall";
 import ManageHistoryIcon from "@mui/icons-material/ManageHistory";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import ContactPageIcon from "@mui/icons-material/ContactPage";
 import { useSelector } from "react-redux";
 
 export default function Sidebar({ open, setOpen }) {

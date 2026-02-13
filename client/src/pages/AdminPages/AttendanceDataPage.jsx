@@ -28,7 +28,7 @@ import {
   getAllAttendanceData,
   approveAttendance,
   rejectAttendance,
-} from "../../services/adminService";
+} from "../../services/AdminService/attendanceService";
 import { toast } from "react-toastify";
 
 const statusColor = {
@@ -295,7 +295,7 @@ export default function AttendanceTable() {
           </Box>
 
           {/* Table */}
-          <TableContainer component={Paper} className="rounded-xl">
+          <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper} className="rounded-xl">
             <Table>
               <TableHead className="bg-slate-50">
                 <TableRow>

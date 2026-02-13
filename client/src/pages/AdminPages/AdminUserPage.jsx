@@ -19,11 +19,11 @@ import {
   TextField,
 } from "@mui/material";
 
-import { registerUser } from "../../services/adminService";
+import { registerUser } from "../../services/AdminService/userService";
 
 import { toast } from "react-toastify";
 
-import { blockUser, unBlockUser, getUser } from "../../services/adminService";
+import { blockUser, unBlockUser, getUser } from "../../services/AdminService/userService"
 
 const roleColor = (role) => {
   if (role === "admin") return "error";

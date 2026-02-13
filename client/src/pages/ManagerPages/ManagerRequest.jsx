@@ -12,14 +12,16 @@ import {
 } from "@mui/material";
 
 import { Autocomplete } from "@mui/material";
-import { createAssetRequest } from "../../services/managerService";
+import { createAssetRequest } from "../../services/ManagerService/assetService";
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-
-import { getRequestData, getAssetInfo } from "../../services/managerService";
 import { toast } from "react-toastify";
-import { approveRequest, rejectRequest } from "../../services/managerService";
+import {
+  approveRequest,
+  rejectRequest,
+  getRequestData,
+} from "../../services/ManagerService/requestService";
+import { getAssetInfo } from "../../services/ManagerService/assetService";
 
 import { useSelector } from "react-redux";
 
@@ -50,9 +52,6 @@ const ManagerRequest = () => {
     title: "",
   });
 
-  
-
-  
   const role = user.role;
 
   const fetchRequestsData = async () => {
@@ -172,7 +171,7 @@ const ManagerRequest = () => {
         </Button>
       </div>
 
-      <TableContainer component={Paper}>
+      <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper}>
         <Table>
           <TableHead>
             <TableRow>

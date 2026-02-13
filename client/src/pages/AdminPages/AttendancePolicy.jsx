@@ -17,7 +17,7 @@ import {
   registerAttendancePolicy,
   updateAttendancePolicy,
   getAttendancePolicy,
-} from "../../services/attendanceService";
+} from "../../services/AttendanceService/attendanceService";
 
 import { toast } from "react-toastify";
 

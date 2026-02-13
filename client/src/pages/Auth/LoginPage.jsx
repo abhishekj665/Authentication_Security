@@ -15,7 +15,7 @@ import { toast } from "react-toastify";
 import Hero from "../../components/Hero";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../../redux/auth/authThunk";
-import { verify } from "../../services/authService";
+import { verify } from "../../services/AuthService/authService";
 
 function LoginPage() {
   const [formData, setFormData] = useState({

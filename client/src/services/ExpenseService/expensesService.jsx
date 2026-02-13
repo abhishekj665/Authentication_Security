@@ -1,4 +1,4 @@
-import { API } from "../services/authService";
+import { API } from "../AuthService/authService";
 
 export const getExpenses = async () => {
   try {
@@ -32,5 +32,3 @@ export const createExpense = async (formData) => {
     };
   }
 };
-
-

@@ -15,7 +15,7 @@ import { toast } from "react-toastify";
 import Hero from "../../components/Hero";
 import { registerUser } from "../../redux/auth/authThunk";
 import { useDispatch } from "react-redux";
-import { verify } from "../../services/authService";
+import { verify } from "../../services/AuthService/authService";
 import { loginUser } from "../../redux/auth/authThunk";
 
 function SignupPage() {

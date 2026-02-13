@@ -4,9 +4,9 @@ import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import PendingActionsRoundedIcon from "@mui/icons-material/PendingActionsRounded";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
+import AccessTimeIcon from "@mui/icons-material/AccessTime";
 
-export default function UserSidebar({open, setOpen}) {
-
+export default function UserSidebar({ open, setOpen }) {
   const { user } = useSelector((state) => state.auth);
 
   const navigate = useNavigate();
@@ -25,7 +25,7 @@ export default function UserSidebar({open, setOpen}) {
      ${isActive ? "bg-gray-200 text-black" : "text-gray-600 hover:text-black"}`;
 
   return (
-   <aside
+    <aside
       className={`
         fixed md:static top-0 left-0 z-50 h-full w-64 shadow-md
         flex flex-col p-5 transition-transform duration-300
@@ -35,15 +35,30 @@ export default function UserSidebar({open, setOpen}) {
       `}
     >
       <h1 className="text-lg font-medium mb-8 text-gray-800 italic tracking-tight">
-+        {user?.role?.toUpperCase() ?? "USER"} DASHBOARD
-+      </h1>
+        {user?.role ? "USER DASHBOARD" : ""}
+      </h1>
 
       <nav className="flex flex-col gap-2">
-        <NavLink to="/home/asset" onClick={() => setOpen(false)} className={linkClass}>
+        <NavLink
+          to="/home/asset"
+          onClick={() => setOpen(false)}
+          className={linkClass}
+        >
           <PendingActionsRoundedIcon /> Assets
         </NavLink>
-        <NavLink to="/home/expense" onClick={() => setOpen(false)} className={linkClass}>
+        <NavLink
+          to="/home/expense"
+          onClick={() => setOpen(false)}
+          className={linkClass}
+        >
           <CurrencyExchangeIcon /> Expense
+        </NavLink>
+        <NavLink
+          to="/home/attendance"
+          onClick={() => setOpen(false)}
+          className={linkClass}
+        >
+          <AccessTimeIcon /> Attendance
         </NavLink>
       </nav>
     </aside>

@@ -18,7 +18,7 @@ import {
 import { useSelector } from "react-redux";
 
 
-import { getAllAssets } from "../../services/managerService";
+import { getAllAssets } from "../../services/ManagerService/assetService";
 
 const statusColor = (status) => {
   switch (status) {
@@ -64,7 +64,7 @@ const ManagerAsset = () => {
       <div className="mt-10">
         <h2 className="text-xl font-semibold mb-4">All Assets</h2>
 
-        <TableContainer component={Paper}>
+        <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper}>
           <Table>
             <TableHead>
               <TableRow>

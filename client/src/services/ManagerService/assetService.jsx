@@ -1,18 +1,14 @@
-import { API } from "../services/authService";
+import { API } from "../AuthService/authService";
 
-export const getProfile = async () => {
+export const getAllAssets = async () => {
   try {
-    const response = await API.get("/users/profile", {
-      withCredentials: true,
-    });
+    let response = await API.get(`/manager/asset`);
+
     return response.data;
   } catch (error) {
     return {
       success: false,
-      message:
-        error.response?.data?.message ||
-        error.message ||
-        "Something went wrong",
+      message: error.response?.data?.message || error.message,
     };
   }
 };
@@ -26,22 +22,7 @@ export const createAssetRequest = async (data) => {
       title: data.title,
     };
 
-    let response = await API.post("/users/asset/request", payload);
-    return response.data;
-  } catch (error) {
-    return {
-      success: false,
-      message:
-        error.response?.data?.message ||
-        error.message ||
-        "Something went wrong",
-    };
-  }
-};
-
-export const getAssetRequest = async () => {
-  try {
-    let response = await API.get("/users/asset/request");
+    let response = await API.post("/manager/asset/request", payload);
     return response.data;
   } catch (error) {
     return {
@@ -56,7 +37,7 @@ export const getAssetRequest = async () => {
 
 export const getAssetInfo = async () => {
   try {
-    let response = await API.get("/users/assets");
+    let response = await API.get("/manager/assets");
 
     return response.data;
   } catch (error) {

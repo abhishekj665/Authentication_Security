@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+
 
 import { Button, Select, MenuItem } from "@mui/material";
 import { toast } from "react-toastify";
-import { useSelector } from "react-redux";
+
 
 import {
   getManagersWithUsers,
   assignManager,
   registerNewManager,
-} from "../../services/adminService";
-import { getUser } from "../../services/adminService";
+} from "../../services/AdminService/managerService";
+import { getUser } from "../../services/AdminService/userService";
 
 import {
   Dialog,

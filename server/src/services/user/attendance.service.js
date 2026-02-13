@@ -1,20 +1,64 @@
 import STATUS from "../../constants/Status.js";
-import { Attendance, AttendanceRequest } from "../../models/Associations.model.js";
+import {
+  Attendance,
+  User,
+  AttendanceRequest,
+} from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 
-export const getAttendance = async (userId) => {
+export const getAttendance = async (filters = {}, userId) => {
   try {
-    const attendanceData = await AttendanceRequest.findAll({
-      where: { userId: userId },
-    });
+    const { status, page = 1, limit = 10 } = filters;
 
-    if (!attendanceData) {
-      throw new ExpressError(STATUS.BAD_REQUEST, "No Attendance Data Found");
-    }
+    
+
+    const where = { requestedBy: userId };
+    if (status) where.status = status.toUpperCase();
+
+    const offset = (Number(page) - 1) * Number(limit);
+
+    const { rows, count } = await AttendanceRequest.findAndCountAll({
+      where,
+      attributes: [
+        "id",
+        "attendanceId",
+        "requestType",
+        "status",
+        "reviewedBy",
+        "reviewedAt",
+        "createdAt",
+      ],
+      include: [
+        {
+          model: Attendance,
+          attributes: [
+            "punchInAt",
+            "punchOutAt",
+            "workedMinutes",
+            "breakMinutes",
+            "overtimeMinutes",
+          ],
+        },
+        {
+          model: User,
+          as: "approver",
+          attributes: ["id", "email"],
+          required: false,
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+      limit: Number(limit),
+      offset,
+      distinct: true,
+    });
 
     return {
       success: true,
-      data: attendanceData,
+      data: rows,
+      total: count,
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(count / limit),
       message: "Attendance Data Fetched Successfully",
     };
   } catch (error) {

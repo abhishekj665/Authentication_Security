@@ -29,7 +29,9 @@ import { useDispatch } from "react-redux";
 import { fetchUser } from "./redux/auth/authThunk";
 import AttendancePolicy from "./pages/AdminPages/AttendancePolicy";
 import AttendanceTable from "./pages/AdminPages/AttendanceDataPage";
-import AttendanceData from "./pages/ManagerPages/AttendanceData";
+import AttendanceData from "./pages/ManagerPages/AttendanceRequestPage";
+import UserAttendanceData from "./pages/UserPages/AttendanceData";
+import ManagerAttendancePage from "./pages/ManagerPages/ManagerAttendancePage";
 
 function App() {
   const dispatch = useDispatch();
@@ -46,6 +48,7 @@ function App() {
           <Route path="/home" element={<HomePage />}>
             <Route path="asset" element={<UserAssetPage />}></Route>
             <Route path="expense" element={<UserExpensePage />}></Route>
+            <Route path="attendance" element={<UserAttendanceData />}></Route>
           </Route>
 
           <Route path="/admin" element={<AdminLayoutPage />}>
@@ -63,8 +66,8 @@ function App() {
             <Route path="assets" element={<ManagerAsset />} />
             <Route path="users" element={<ManagerUserPage />} />
             <Route path="requests" element={<ManagerAssetRequest />} />
-            <Route path="attendance" element={<AttendanceData />} />
-
+            <Route path="attendance/request" element={<AttendanceData />} />
+            <Route path="attendance/me" element={<ManagerAttendancePage />} />
             <Route path="expenses" element={<ManagerExpensesPage />} />
           </Route>
 

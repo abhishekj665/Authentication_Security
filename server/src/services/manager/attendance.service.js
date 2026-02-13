@@ -6,7 +6,7 @@ import {
 } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 
-export const getAttendance = async (filters = {}, managerId) => {
+export const getAllAttendance = async (filters = {}, managerId) => {
   try {
     const { status, role, page = 1, limit = 10 } = filters;
 
@@ -61,6 +61,66 @@ export const getAttendance = async (filters = {}, managerId) => {
   }
 };
 
+export const getAttendance = async (filters = {}, managerId) => {
+  try {
+    const { status, role, page = 1, limit = 10 } = filters;
+
+    const where = { requestedBy: managerId };
+    if (status) where.status = status.toUpperCase();
+
+    const requesterWhere = {};
+    if (role) requesterWhere.role = role;
+
+    const offset = (Number(page) - 1) * Number(limit);
+
+    const { rows, count } = await AttendanceRequest.findAndCountAll({
+      where,
+      attributes: ["id", "reviewedBy", "requestedTo", "status", "createdAt"],
+      order: [["createdAt", "DESC"]],
+      limit: Number(limit),
+      offset,
+      distinct: true,
+      include: [
+        {
+          model: Attendance,
+          attributes: [
+            "id",
+            "punchInAt",
+            "punchOutAt",
+            "workedMinutes",
+            "breakMinutes",
+          ],
+        },
+        {
+          model: User,
+          as: "requester",
+          attributes: ["id", "role", "email"],
+          required: true,
+          where: Object.keys(requesterWhere).length
+            ? requesterWhere
+            : undefined,
+        },
+        {
+          model: User,
+          as: "approver",
+          attributes: ["id", "email", "role"],
+          required: false,
+        },
+      ],
+    });
+
+    return {
+      success: true,
+      data: rows,
+      total: count,
+      page: Number(page),
+      limit: Number(limit),
+      totalPages: Math.ceil(count / limit),
+    };
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
 
 export const approveAttendanceRequest = async (managerId, id) => {
   try {

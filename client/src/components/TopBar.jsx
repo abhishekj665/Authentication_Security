@@ -7,8 +7,11 @@ import { Switch } from "@mui/material";
 import { useState } from "react";
 import { FormControlLabel, IconButton } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { punchOut, getTodayAttendance } from "../services/attendanceService";
-import { punchIn } from "../services/attendanceService";
+import {
+  punchOut,
+  getTodayAttendance,
+} from "../services/AttendanceService/attendanceService";
+import { punchIn } from "../services/AttendanceService/attendanceService";
 import { useEffect } from "react";
 import { useSelector } from "react-redux";
 

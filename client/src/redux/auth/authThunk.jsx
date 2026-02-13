@@ -1,8 +1,8 @@
 import { createAsyncThunk } from "@reduxjs/toolkit";
 
-import { signup, login, logOut } from "../../services/authService";
+import { signup, login, logOut } from "../../services/AuthService/authService";
 
-import { getProfile } from "../../services/userService";
+import { getProfile } from "../../services/UserService/userService";
 
 export const registerUser = createAsyncThunk(
   "auth/registerUser",
@@ -33,13 +33,10 @@ export const fetchUser = createAsyncThunk(
   "auth/fetchUser",
   async (_, { rejectWithValue }) => {
     try {
-      
       const res = await getProfile();
-      
 
       return res.data.user;
     } catch (err) {
-      
       return rejectWithValue(err.response?.data || "fail");
     }
   },

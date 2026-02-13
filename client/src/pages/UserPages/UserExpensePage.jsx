@@ -18,9 +18,9 @@ import CancelPresentationRoundedIcon from "@mui/icons-material/CancelPresentatio
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 
-import { createExpense } from "../../services/expensesService";
-import { getExpenses } from "../../services/expensesService";
-import { createAccount } from "../../services/accountService";
+import { createExpense } from "../../services/ExpenseService/expensesService";
+import { getExpenses } from "../../services/ExpenseService/expensesService";
+import { createAccount } from "../../services/AccountService/accountService";
 
 import { socket } from "../../socket";
 
@@ -50,10 +50,6 @@ export default function UserExpensePage() {
     bill: null,
     pin: "",
   });
-
-  
-
-  
 
   const fetchExpenses = async () => {
     try {
@@ -167,7 +163,7 @@ export default function UserExpensePage() {
         <div className="mt-10 p-6">
           <h2 className="text-xl font-semibold mb-4">Your Expenses</h2>
 
-          <TableContainer component={Paper}>
+          <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>

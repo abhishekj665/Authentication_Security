@@ -19,12 +19,12 @@ import {
   TextField,
 } from "@mui/material";
 
-import { registerUser } from "../../services/managerService";
+import { registerUser } from "../../services/ManagerService/userService";
 
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 
-import { getUser } from "../../services/managerService";
+import { getUser } from "../../services/ManagerService/userService";
 
 const roleColor = (role) => {
   if (role === "admin") return "error";
@@ -202,7 +202,7 @@ const ManagerUserPage = () => {
         </div>
       </div>
 
-      <TableContainer component={Paper}>
+      <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper}>
         <Table>
           <TableHead>
             <TableRow>

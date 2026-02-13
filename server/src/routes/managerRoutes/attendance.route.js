@@ -4,7 +4,8 @@ import * as managerUserController from "../../controllers/manager/attendance.con
 
 const Router = express.Router();
 
-Router.get("/attendance", managerUserController.getAttendanceData);
+Router.get("/attendance", managerUserController.getAllAttendanceData);
+Router.get("/attendance/me", managerUserController.getAttendanceData);
 Router.patch(
   "/attendance/approve/:id",
   managerUserController.approveAttendanceRequest,

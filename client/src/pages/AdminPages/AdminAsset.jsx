@@ -25,7 +25,7 @@ import {
   getAllAssets,
   deleteAsset,
   updateAsset,
-} from "../../services/adminService";
+} from "../../services/AdminService/assetService";
 
 const statusColor = (status) => {
   switch (status) {

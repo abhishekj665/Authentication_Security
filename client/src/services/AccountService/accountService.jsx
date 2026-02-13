@@ -1,4 +1,4 @@
-import { API } from "../services/authService";
+import { API } from "../AuthService/authService";
 
 export const createAccount = async (data) => {
   try {
@@ -9,6 +9,3 @@ export const createAccount = async (data) => {
     return;
   }
 };
-
-
-

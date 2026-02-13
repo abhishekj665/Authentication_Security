@@ -5,7 +5,7 @@ import {
   createAssetRequest,
   getAssetRequest,
   getAssetInfo,
-} from "../../services/userService";
+} from "../../services/UserService/userService";
 import { useEffect } from "react";
 import { toast } from "react-toastify";
 import { Autocomplete } from "@mui/material";
@@ -136,7 +136,7 @@ export default function UserAssetPage() {
         <div className="mt-10 p-6 ">
           <h2 className="text-xl font-semibold mb-4">Your Requests</h2>
 
-          <TableContainer className="w-full" component={Paper}>
+          <TableContainer style={{ backgroundColor: "#F5F5F5" }} className="w-full" component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>

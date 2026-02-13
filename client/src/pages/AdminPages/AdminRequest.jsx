@@ -11,10 +11,9 @@ import {
 } from "@mui/material";
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { getRequestData } from "../../services/adminService";
+import { getRequestData } from "../../services/AdminService/requestService";
 import { toast } from "react-toastify";
-import { approveRequest, rejectRequest } from "../../services/adminService";
+import { approveRequest, rejectRequest } from "../../services/AdminService/requestService";
 
 import { useSelector } from "react-redux";
 

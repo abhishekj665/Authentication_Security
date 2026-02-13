@@ -22,12 +22,13 @@ import {
 
 import { useEffect, useMemo, useState } from "react";
 import { useSelector } from "react-redux";
+
+import { toast } from "react-toastify";
 import {
+  approveAttendance,
   getAllAttendanceData,
   rejectAttendance,
-} from "../../services/managerService";
-import { toast } from "react-toastify";
-import { approveAttendance } from "../../services/managerService";
+} from "../../services/ManagerService/attendanceService";
 import { Pagination } from "@mui/material";
 
 const statusColor = {
@@ -160,7 +161,7 @@ export default function AttendanceData() {
       <Box className="flex justify-between items-center mb-6">
         <h1 className="text-xl font-bold mb-8 text-gray-800">
           <div className="text-2xl font-medium flex italic tracking-tight">
-            <p>Attendance Data</p>
+            <p>Attendance Requests</p>
           </div>
         </h1>
       </Box>
@@ -271,7 +272,7 @@ export default function AttendanceData() {
             </FormControl>
           </Box>
 
-          <TableContainer component={Paper} className="rounded-xl">
+          <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper} className="rounded-xl">
             <Table>
               <TableHead className="bg-slate-50">
                 <TableRow>

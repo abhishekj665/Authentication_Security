@@ -11,7 +11,6 @@ import {
 } from "@mui/material";
 
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 
 import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
@@ -21,7 +20,7 @@ import {
   getAllExpenses,
   approveExpense,
   rejectExpense,
-} from "../../services/adminService";
+} from "../../services/AdminService/expenseService";
 
 const statusColor = (status) => {
   if (status === "approved") return "success";

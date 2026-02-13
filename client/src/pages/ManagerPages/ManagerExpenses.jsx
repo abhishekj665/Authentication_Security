@@ -21,7 +21,7 @@ import {
   getAllExpenses,
   approveExpense,
   rejectExpense,
-} from "../../services/managerService";
+} from "../../services/ManagerService/expenseService";
 
 const statusColor = (status) => {
   if (status === "approved") return "success";
@@ -105,7 +105,7 @@ const ManagerExpensesPage = () => {
     <div className="p-6">
       <h1 className="text-2xl font-semibold mb-4">Expense Requests</h1>
 
-      <TableContainer component={Paper}>
+      <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper}>
         <Table>
           <TableHead>
             <TableRow>

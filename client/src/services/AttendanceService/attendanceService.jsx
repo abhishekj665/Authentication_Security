@@ -1,4 +1,4 @@
-import { API } from "../services/authService";
+import { API } from "../AuthService/authService";
 
 export const punchIn = async (data) => {
   try {

@@ -1,4 +1,4 @@
-import { blockIP, getAllIps, unBlockIP } from "../../services/adminService";
+import { blockIP, getAllIps, unBlockIP } from "../../services/AdminService/ipService";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
