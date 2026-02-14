@@ -82,6 +82,7 @@ export const registerInService = async (userId, { data }, ipAddress) => {
       if (requestData.status != "PENDING") {
         throw new ExpressError(STATUS.BAD_REQUEST, "You can't punch in now");
       }
+
       throw new ExpressError(STATUS.BAD_REQUEST, "Already punched in");
     }
 

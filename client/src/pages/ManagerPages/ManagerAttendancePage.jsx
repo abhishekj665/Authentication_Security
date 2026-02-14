@@ -279,7 +279,7 @@ export default function ManagerAttendancePage() {
                   <TableCell>Break</TableCell>
                   <TableCell>OverTime</TableCell>
                   <TableCell>Status</TableCell>
-                  <TableCell>Reviewed</TableCell>
+                  <TableCell>Reviewed By</TableCell>
                 </TableRow>
               </TableHead>
 

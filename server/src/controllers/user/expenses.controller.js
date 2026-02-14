@@ -19,7 +19,6 @@ export const getExpenseData = async (req, res, next) => {
         STATUS.ACCEPTED,
       );
     } else {
-      
       return errorResponse(res, response.message);
     }
   } catch (error) {

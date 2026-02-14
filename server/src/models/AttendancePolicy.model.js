@@ -30,8 +30,8 @@ const AttendancePolicy = sequelize.define(
       type: DataTypes.TIME,
       allowNull: false,
     },
-    breakTime: {
-      type: DataTypes.TIME,
+    breakMinute: {
+      type: DataTypes.INTEGER,
       allowNull: true,
     },
     gracePunchInTime: {

@@ -5,6 +5,7 @@ import {
   User,
 } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
+import { successResponse } from "../../utils/response.utils.js";
 
 export const getAttendance = async (filters = {}) => {
   try {
@@ -54,8 +55,6 @@ export const getAttendance = async (filters = {}) => {
         },
       ],
     });
-
-    
 
     return {
       success: true,
@@ -108,7 +107,7 @@ export const approveAttendanceRequest = async (adminId, id) => {
   }
 };
 
-export const rejectAttendanceRequest = async (adminId, id) => {
+export const rejectAttendanceRequest = async (adminId, id, data) => {
   try {
     const attendanceData = await AttendanceRequest.findOne({
       where: {
@@ -116,15 +115,27 @@ export const rejectAttendanceRequest = async (adminId, id) => {
         status: "PENDING",
         requestedTo: adminId,
       },
+      include: [{ model: Attendance, attributes: ["punchOutAt", "punchInAt"] }],
     });
 
     if (!attendanceData) {
       throw new ExpressError(STATUS.BAD_REQUEST, "No Data Found");
     }
 
+    if (
+      !attendanceData.Attendance.punchOutAt ||
+      !attendanceData.Attendance.punchInAt
+    ) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "You can't reject attendance before punch out",
+      );
+    }
+
     attendanceData.status = "REJECTED";
     attendanceData.reviewedBy = adminId;
     attendanceData.reviewedAt = new Date();
+    attendanceData.remark = data.remark;
 
     await attendanceData.save();
 
@@ -132,6 +143,119 @@ export const rejectAttendanceRequest = async (adminId, id) => {
       success: true,
       data: attendanceData,
       message: "Attendance Rejected Successfully ",
+    };
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+export const bulkAttendanceRequestApprove = async ({ ids }, adminId) => {
+  try {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "You have to select atleast one request",
+      );
+    }
+
+    const requests = await AttendanceRequest.findAll({
+      where: { id: ids, status: "PENDING" },
+      include: [
+        {
+          model: Attendance,
+          attributes: ["id", "punchOutAt"],
+        },
+      ],
+    });
+
+    if (requests.length !== ids.length) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Some requests are not pending or not found",
+      );
+    }
+
+    const hasIncomplete = requests.some((r) => !r.Attendance?.punchOutAt);
+
+    if (hasIncomplete) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Cannot approve — some requests have no punch out",
+      );
+    }
+
+    await AttendanceRequest.update(
+      {
+        status: "APPROVED",
+        reviewedBy: adminId,
+      },
+      {
+        where: { id: ids, status: "PENDING" },
+      },
+    );
+
+    return {
+      success: true,
+      message: "Request Approved Successfully",
+    };
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+export const bulkAttendanceRequestReject = async ({ ids, remark }, adminId) => {
+  try {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "You have to select atleast one request",
+      );
+    }
+
+    if (!remark?.trim()) {
+      throw new ExpressError(STATUS.BAD_REQUEST, "Remark is required");
+    }
+
+    const requests = await AttendanceRequest.findAll({
+      where: { id: ids, status: "PENDING" },
+      include: [
+        {
+          model: Attendance,
+          attributes: ["id", "punchOutAt"],
+        },
+      ],
+    });
+
+    if (requests.length !== ids.length) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Some requests are not pending or not found",
+      );
+    }
+
+    const hasIncomplete = requests.some((r) => !r.Attendance?.punchOutAt);
+
+    if (hasIncomplete) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Cannot reject — some requests have no punch out",
+      );
+    }
+
+    await AttendanceRequest.update(
+      {
+        status: "REJECTED",
+        remark,
+        reviewedBy: adminId,
+      },
+      {
+        where: { id: ids, status: "PENDING" },
+      },
+    );
+
+    return {
+      success: true,
+      message: "Attendance Request rejected successfully",
     };
   } catch (error) {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);

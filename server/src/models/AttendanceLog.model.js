@@ -61,10 +61,7 @@ const AttendanceLog = sequelize.define(
       allowNull: true,
     },
     
-    editReason: {
-      type: DataTypes.STRING,
-      allowNull: true,
-    },
+    
   },
 
   {

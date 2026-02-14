@@ -28,7 +28,12 @@ import {
   approveAttendance,
   getAllAttendanceData,
   rejectAttendance,
+  bulkApproveAttendance,
+  bulkRejectAttendance,
 } from "../../services/ManagerService/attendanceService";
+
+import Checkbox from "@mui/material/Checkbox";
+
 import { Pagination } from "@mui/material";
 
 const statusColor = {
@@ -45,6 +50,12 @@ export default function AttendanceData() {
   const [rows, setRows] = useState([]);
   const [tab, setTab] = useState(0);
 
+  const [selectedIds, setSelectedIds] = useState([]);
+  const [openRejectBox, setOpenRejectBox] = useState(false);
+  const [remark, setRemark] = useState("");
+  const [rejectId, setRejectId] = useState(null);
+  const [rejectMode, setRejectMode] = useState("single");
+
   const [page, setPage] = useState(1);
   const [limit, setLimit] = useState(5);
   const [total, setTotal] = useState(0);
@@ -58,19 +69,23 @@ export default function AttendanceData() {
       : "-";
   const fmtDate = (iso) => (iso ? new Date(iso).toLocaleDateString() : "-");
 
-  useEffect(() => {
-    fetchAttendanceData();
-  }, [roleFilter, statusFilter, page, limit]);
+  const visibleRows = useMemo(() => {
+    if (tab === 1) {
+      return rows.filter((r) => r.role === "user" && r.status === "pending");
+    }
+
+    return rows;
+  }, [rows, tab]);
 
   const summary = useMemo(() => {
-    const present = rows.filter((r) => r.status === "approved").length;
-    const pending = rows.filter((r) => r.status === "pending").length;
-    const rejected = rows.filter((r) => r.status === "rejected").length;
+    const present = visibleRows.filter((r) => r.status === "approved").length;
+    const pending = visibleRows.filter((r) => r.status === "pending").length;
+    const rejected = visibleRows.filter((r) => r.status === "rejected").length;
 
-    const totalWorked = rows.reduce((a, r) => a + r.worked, 0);
-    const totalBreak = rows.reduce((a, r) => a + r.break, 0);
+    const totalWorked = visibleRows.reduce((a, r) => a + r.worked, 0);
+    const totalBreak = visibleRows.reduce((a, r) => a + r.break, 0);
 
-    const uniqueDays = new Set(rows.map((r) => r.requestDate));
+    const uniqueDays = new Set(visibleRows.map((r) => r.requestDate));
 
     return {
       workingDays: uniqueDays.size,
@@ -80,15 +95,32 @@ export default function AttendanceData() {
       workedHrs: Math.floor(totalWorked / 60),
       breakHrs: Math.floor(totalBreak / 60),
     };
-  }, [rows]);
+  }, [visibleRows]);
+
+  const toggleRow = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
+
+  const toggleAll = () => {
+    const ids = rows.map((r) => r.id);
+    const allSelected = ids.every((id) => selectedIds.includes(id));
+    setSelectedIds(allSelected ? [] : ids);
+  };
 
   const fetchAttendanceData = async () => {
     try {
       const params = { page, limit };
 
-      if (statusFilter !== "all") params.status = statusFilter;
-      if (roleFilter === "user") params.role = "user";
-      if (roleFilter === "me") params.requestedTo = currentUser?.id;
+      if (tab === 1) {
+        params.status = "pending";
+        params.role = "user";
+        params.requestedTo = currentUser?.id;
+      } else {
+        if (statusFilter !== "all") params.status = statusFilter;
+        if (roleFilter !== "all") params.role = roleFilter;
+      }
 
       const res = await getAllAttendanceData(params);
 
@@ -99,7 +131,6 @@ export default function AttendanceData() {
       }
 
       const payload = res.data;
-
       setTotal(payload.total || 0);
 
       const mapped = payload.data.map((item) => {
@@ -155,6 +186,43 @@ export default function AttendanceData() {
       toast.error(error.message);
     }
   };
+
+  const handleBulkApprove = async () => {
+    if (!selectedIds.length) return toast.error("Select rows first");
+
+    const res = await bulkApproveAttendance(selectedIds);
+
+    if (res?.success) {
+      toast.success(res.message);
+      setSelectedIds([]);
+      fetchAttendanceData();
+    } else {
+      toast.error(res.message);
+    }
+  };
+
+  const handleBulkReject = async () => {
+    if (!selectedIds.length) return toast.error("Select rows first");
+    if (!remark.trim()) return toast.error("Reject reason required");
+
+    const res = await bulkRejectAttendance(selectedIds, remark);
+
+    if (res?.success) {
+      toast.success(res.message);
+      setSelectedIds([]);
+      fetchAttendanceData();
+    } else {
+      toast.error(res.message);
+    }
+  };
+
+  useEffect(() => {
+    fetchAttendanceData();
+  }, [roleFilter, statusFilter, page, limit, tab]);
+
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [tab, rows]);
 
   return (
     <Box className="p-6 bg-white">
@@ -272,27 +340,79 @@ export default function AttendanceData() {
             </FormControl>
           </Box>
 
-          <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper} className="rounded-xl">
+          <TableContainer
+            style={{ backgroundColor: "#F5F5F5" }}
+            component={Paper}
+            className="rounded-xl"
+          >
+            {tab === 1 && selectedIds.length > 0 && (
+              <Box className="flex gap-3 mb-3">
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={handleBulkApprove}
+                >
+                  Approve Selected ({selectedIds.length})
+                </Button>
+
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => {
+                    setRejectMode("bulk");
+                    setRejectId(null);
+                    setOpenRejectBox(true);
+                  }}
+                >
+                  Reject Selected
+                </Button>
+              </Box>
+            )}
+
             <Table>
               <TableHead className="bg-slate-50">
                 <TableRow>
+                  {tab === 1 && (
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={
+                          rows.length > 0 &&
+                          rows.every((r) => selectedIds.includes(r.id))
+                        }
+                        indeterminate={
+                          rows.some((r) => selectedIds.includes(r.id)) &&
+                          !rows.every((r) => selectedIds.includes(r.id))
+                        }
+                        onChange={toggleAll}
+                      />
+                    </TableCell>
+                  )}
+
                   <TableCell>Date</TableCell>
                   <TableCell>Email</TableCell>
-
                   <TableCell>Punch In</TableCell>
                   <TableCell>Punch Out</TableCell>
                   <TableCell>Worked (m)</TableCell>
                   <TableCell>Break (m)</TableCell>
                   <TableCell>Overtime (m)</TableCell>
                   <TableCell>Status</TableCell>
-                  <TableCell>Reviewed</TableCell>
-                  <TableCell align="center">Action</TableCell>
+                  {tab === 0 && <TableCell>Reviewed By</TableCell>}
+                  {tab === 1 && <TableCell align="center">Action</TableCell>}
                 </TableRow>
               </TableHead>
 
               <TableBody>
                 {rows.map((row) => (
                   <TableRow key={row.id} hover>
+                    {tab === 1 && (
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          checked={selectedIds.includes(row.id)}
+                          onChange={() => toggleRow(row.id)}
+                        />
+                      </TableCell>
+                    )}
+
                     <TableCell>{row.requestDate}</TableCell>
 
                     <TableCell>
@@ -316,56 +436,116 @@ export default function AttendanceData() {
                       />
                     </TableCell>
 
-                    <TableCell>
-                      {row.reviewedBy
-                        ? row.reviewedBy === currentUser?.id
-                          ? "You"
-                          : row.reviewedBy
-                        : "—"}
-                    </TableCell>
+                    {tab === 0 && (
+                      <TableCell>
+                        {row.reviewedBy
+                          ? row.reviewedBy === currentUser?.id
+                            ? "You"
+                            : row.reviewedBy
+                          : "—"}
+                      </TableCell>
+                    )}
 
-                    <TableCell align="center">
-                      {currentUser?.role === "manager" &&
-                      row.role === "user" &&
-                      row.status === "pending" ? (
-                        <Box className="flex gap-2 justify-center">
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="success"
-                            onClick={() => handleApprove(row)}
-                          >
-                            Accept
-                          </Button>
+                    {tab === 1 && (
+                      <TableCell align="center">
+                        {currentUser?.role === "manager" &&
+                          row.role === "user" &&
+                          row.status === "pending" && (
+                            <Box className="flex gap-2 justify-center">
+                              <Button
+                                size="small"
+                                variant="contained"
+                                color="success"
+                                onClick={() => handleApprove(row)}
+                              >
+                                Accept
+                              </Button>
 
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="error"
-                            onClick={() => handleReject(row)}
-                          >
-                            Reject
-                          </Button>
-                        </Box>
-                      ) : (
-                        "—"
-                      )}
-                    </TableCell>
+                              <Button
+                                size="small"
+                                variant="contained"
+                                color="error"
+                                onClick={() => {
+                                  setRejectMode("single");
+                                  setRejectId(row.id);
+                                  setOpenRejectBox(true);
+                                }}
+                              >
+                                Reject
+                              </Button>
+                            </Box>
+                          )}
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
             </Table>
             <Box className="flex justify-end mt-4">
               <Pagination
-                count={Math.ceil(total / limit)}
+                count={Math.max(1, Math.ceil(total / limit))}
                 page={page}
                 onChange={(e, value) => setPage(value)}
-                color="primary"
               />
             </Box>
           </TableContainer>
         </CardContent>
       </Card>
+      {openRejectBox && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-white w-full max-w-md rounded-xl p-6 shadow-lg">
+            <h2 className="text-lg font-semibold mb-3">
+              Reject Attendance Request
+            </h2>
+
+            <textarea
+              className="w-full border rounded-lg p-2"
+              rows="4"
+              placeholder="Enter reject reason..."
+              value={remark}
+              onChange={(e) => setRemark(e.target.value)}
+            />
+
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                className="px-4 py-2 border rounded-lg"
+                onClick={() => {
+                  setOpenRejectBox(false);
+                  setRemark("");
+                  setRejectId(null);
+                  setRejectMode("single");
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="px-4 py-2 bg-red-500 text-white rounded-lg"
+                onClick={async () => {
+                  if (!remark.trim()) {
+                    toast.error("Reject reason required");
+                    return;
+                  }
+
+                  if (rejectMode === "bulk") {
+                    await handleBulkReject();
+                  } else {
+                    await rejectAttendance(rejectId, remark);
+                    fetchAttendanceData();
+                  }
+
+                  setOpenRejectBox(false);
+                  setRemark("");
+                  setRejectId(null);
+                  setRejectMode("single");
+                }}
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Box>
   );
 }

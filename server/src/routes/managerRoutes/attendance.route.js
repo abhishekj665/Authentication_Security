@@ -1,18 +1,27 @@
 import express from "express";
 
-import * as managerUserController from "../../controllers/manager/attendance.controller.js";
+import * as attendanceController from "../../controllers/manager/attendance.controller.js";
 
 const Router = express.Router();
 
-Router.get("/attendance", managerUserController.getAllAttendanceData);
-Router.get("/attendance/me", managerUserController.getAttendanceData);
+Router.get("/attendance", attendanceController.getAllAttendanceData);
+Router.get("/attendance/me", attendanceController.getAttendanceData);
 Router.patch(
   "/attendance/approve/:id",
-  managerUserController.approveAttendanceRequest,
+  attendanceController.approveAttendanceRequest,
 );
 Router.patch(
   "/attendance/reject/:id",
-  managerUserController.rejectAttendanceRequest,
+  attendanceController.rejectAttendanceRequest,
+);
+
+Router.patch(
+  "/attendance/bulk-approve",
+  attendanceController.bulkAttendanceRequestApprove,
+);
+Router.patch(
+  "/attendance/bulk-reject",
+  attendanceController.bulkAttendanceRequestReject,
 );
 
 export const attendanceRouter = Router;

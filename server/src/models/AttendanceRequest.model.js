@@ -26,16 +26,17 @@ const AttendanceRequest = sequelize.define(
       type: DataTypes.UUID,
       allowNull: false,
     },
-    reason: {
-      type: DataTypes.TEXT,
-      allowNull: true,
-    },
+
     reviewedBy: {
       type: DataTypes.UUID,
       allowNull: true,
     },
     reviewedAt: {
       type: DataTypes.DATE,
+      allowNull: true,
+    },
+    remark: {
+      type: DataTypes.TEXT,
       allowNull: true,
     },
     status: {

@@ -14,4 +14,13 @@ Router.patch(
   attendanceController.rejectAttendanceRequest,
 );
 
+Router.patch(
+  "/attendance/bulk-approve",
+  attendanceController.bulkAttendanceRequestApprove,
+);
+Router.patch(
+  "/attendance/bulk-reject",
+  attendanceController.bulkAttendanceRequestReject,
+);
+
 export const attendanceRouter = Router;

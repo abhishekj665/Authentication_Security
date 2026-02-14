@@ -29,10 +29,53 @@ export const approveAttendance = async (id) => {
   }
 };
 
-export const rejectAttendance = async (id) => {
+export const rejectAttendance = async (id, remark) => {
   try {
     console.log(id);
-    let response = await API.patch(`/admin/attendance/reject/${id}`);
+    let response = await API.patch(`/admin/attendance/reject/${id}`, {
+      remark,
+    });
+
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong",
+    };
+  }
+};
+
+export const bulkApproveAttendance = async (ids) => {
+  try {
+    let response = await API.patch(`/admin/attendance/bulk-approve`, {
+      ids,
+    });
+
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong",
+    };
+  }
+};
+
+export const bulkRejectAttendance = async (ids, remark) => {
+  try {
+    
+
+    let response = await API.patch(`/admin/attendance/bulk-reject`, {
+      ids,
+      remark,
+    });
+
+    
 
     return response.data;
   } catch (error) {

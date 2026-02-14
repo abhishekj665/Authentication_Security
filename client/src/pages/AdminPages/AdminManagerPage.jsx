@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 
-
 import { Button, Select, MenuItem } from "@mui/material";
 import { toast } from "react-toastify";
-
 
 import {
   getManagersWithUsers,
@@ -164,8 +162,8 @@ export default function AdminManagersPage() {
   }, []);
 
   return (
-    <div className="p-1  overflow-y-auto">
-      <div className="p-6">
+    <div className="p-2 overflow-y-auto">
+      <div>
         <div className="flex justify-between items-center mb-4">
           <h1 className="text-xl font-semibold">Manager Control</h1>
 
@@ -178,11 +176,11 @@ export default function AdminManagersPage() {
           </Button>
         </div>
 
-        <div className="bg-white rounded-xl border shadow-sm overflow-hidden mt-15">
+        <div className="bg-white  shadow-sm overflow-hidden mt-15">
           <TableContainer component={Paper} sx={{ mt: 2 }}>
             <Table size="small">
               <TableHead>
-                <TableRow sx={{ backgroundColor: "#f5f5f5" }}>
+                <TableRow>
                   <TableCell>
                     <b>Manager</b>
                   </TableCell>

@@ -58,3 +58,40 @@ export const rejectAttendance = async (id) => {
     };
   }
 };
+
+export const bulkApproveAttendance = async (ids) => {
+  try {
+    let response = await API.patch(`/manager/attendance/bulk-approve`, {
+      ids,
+    });
+
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong",
+    };
+  }
+};
+
+export const bulkRejectAttendance = async (ids, remark) => {
+  try {
+    let response = await API.patch(`/manager/attendance/bulk-reject`, {
+      ids,
+      remark,
+    });
+
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong",
+    };
+  }
+};

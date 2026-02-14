@@ -87,3 +87,32 @@ export const rejectAttendanceRequest = async (req, res, next) => {
     next(error);
   }
 };
+
+
+export const bulkAttendanceRequestApprove = async (req, res, next) => {
+  try{
+    let response = await attendanceService.bulkAttendanceRequestApprove(req.body, req.user.id);
+
+    if(response.success){
+      return successResponse(res, response.data, response.message, STATUS.ACCEPTED);
+    }else{
+      return errorResponse(res, response.message, STATUS.BAD_REQUEST)
+    }
+  }catch(error){
+    next(error);
+  }
+}
+
+export const bulkAttendanceRequestReject = async (req, res, next) => {
+  try{
+    let response = await attendanceService.bulkAttendanceRequestReject(req.body, req.user.id);
+
+    if(response.success){
+      return successResponse(res, response.data, response.message, STATUS.ACCEPTED);
+    }else{
+      return errorResponse(res, response.message, STATUS.BAD_REQUEST)
+    }
+  }catch(error){
+    next(error);
+  }
+}

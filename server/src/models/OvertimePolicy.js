@@ -10,7 +10,7 @@ const OvertimePolicy = sequelize.define(
       defaultValue: UUIDV4,
       primaryKey: true,
     },
-    overtimeHours: {
+    overtimeStartTime: {
       type: DataTypes.TIME,
       allowNull: true,
     },

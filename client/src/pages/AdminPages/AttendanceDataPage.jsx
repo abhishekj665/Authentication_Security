@@ -22,12 +22,15 @@ import {
 } from "@mui/material";
 
 import { Pagination } from "@mui/material";
+import Checkbox from "@mui/material/Checkbox";
 
 import { useEffect, useMemo, useState } from "react";
 import {
   getAllAttendanceData,
   approveAttendance,
   rejectAttendance,
+  bulkApproveAttendance,
+  bulkRejectAttendance,
 } from "../../services/AdminService/attendanceService";
 import { toast } from "react-toastify";
 
@@ -43,7 +46,15 @@ export default function AttendanceTable() {
   const [rows, setRows] = useState([]);
   const [tab, setTab] = useState(0);
   const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(2);
+  const [limit, setLimit] = useState(5);
+
+  const [rejectMode, setRejectMode] = useState("single");
+
+  const [openRejectBox, setOpenRejectBox] = useState(false);
+  const [rejectId, setRejectId] = useState(null);
+  const [remark, setRemark] = useState("");
+
+  const [selectedIds, setSelectedIds] = useState([]);
 
   const [total, setTotal] = useState(0);
 
@@ -61,8 +72,14 @@ export default function AttendanceTable() {
     try {
       const params = { page, limit };
 
-      if (statusFilter !== "all") params.status = statusFilter;
-      if (roleFilter !== "all") params.role = roleFilter;
+      if (tab === 1) {
+        params.status = "pending";
+        params.role = "manager";
+      } else {
+        if (statusFilter !== "all") params.status = statusFilter;
+        if (roleFilter !== "all") params.role = roleFilter;
+        params.excludeManagerPending = true;
+      }
 
       const res = await getAllAttendanceData(params);
 
@@ -73,7 +90,6 @@ export default function AttendanceTable() {
       }
 
       const payload = res.data;
-
       setTotal(payload.total || 0);
 
       const mapped = payload.rows.map((item) => {
@@ -98,19 +114,36 @@ export default function AttendanceTable() {
       });
 
       setRows(mapped);
-    } catch (err) {
+    } catch {
       setRows([]);
       setTotal(0);
     }
   };
 
-  useEffect(() => {
-    fetchAttendanceData();
-  }, [statusFilter, roleFilter, page, limit]);
+  const params = { page, limit };
 
-  useEffect(() => {
-    setPage(1);
-  }, [statusFilter, roleFilter]);
+  if (tab === 1) {
+    params.role = "manager";
+    params.status = "pending";
+  } else {
+    if (statusFilter !== "all") params.status = statusFilter;
+    if (roleFilter !== "all") params.role = roleFilter;
+  }
+
+  const visibleRows = useMemo(() => {
+    if (tab === 1) {
+      return rows.filter((r) => r.status === "pending");
+    }
+
+    return rows.filter((r) => r.status !== "pending");
+  }, [rows, tab]);
+
+  const toggleAll = () => {
+    const allIds = pagedRows.map((r) => r.id);
+
+    const allSelected = allIds.every((id) => selectedIds.includes(id));
+    setSelectedIds(allSelected ? [] : allIds);
+  };
 
   const summary = useMemo(() => {
     const present = rows.filter((r) => r.status === "approved").length;
@@ -130,7 +163,13 @@ export default function AttendanceTable() {
       workedHrs: Math.floor(totalWorked / 60),
       breakHrs: Math.floor(totalBreak / 60),
     };
-  }, [rows]);
+  }, [visibleRows]);
+
+  const toggleRow = (id) => {
+    setSelectedIds((prev) =>
+      prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id],
+    );
+  };
 
   const handleApprove = async (row) => {
     try {
@@ -146,11 +185,12 @@ export default function AttendanceTable() {
     }
   };
 
-  const handleReject = async (row) => {
+  const handleReject = async (id, remark) => {
     try {
-      const response = await rejectAttendance(row.id);
+      const response = await rejectAttendance(id, remark);
+
       if (response?.success) {
-        toast.success(response.message);
+        toast.success(response.message || "Rejected");
         fetchAttendanceData();
       } else {
         toast.error(response.message);
@@ -159,6 +199,50 @@ export default function AttendanceTable() {
       toast.error(error.message);
     }
   };
+
+  const handleBulkApprove = async () => {
+    const res = await bulkApproveAttendance(selectedIds);
+
+    if (res?.success) {
+      toast.success(res.message);
+      setSelectedIds([]);
+      fetchAttendanceData();
+    } else {
+      toast.error(res.message);
+    }
+  };
+  const handleBulkReject = async () => {
+    const res = await bulkRejectAttendance(selectedIds, remark);
+
+    if (res?.success) {
+      toast.success(res.message);
+      setSelectedIds([]);
+      fetchAttendanceData();
+    } else {
+      toast.error(res.message);
+    }
+  };
+
+  const pagedRows = useMemo(() => {
+    const start = (page - 1) * limit;
+    return visibleRows.slice(start, start + limit);
+  }, [visibleRows, page, limit]);
+
+  useEffect(() => {
+    fetchAttendanceData();
+  }, [statusFilter, roleFilter, page, limit, tab]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [statusFilter, roleFilter]);
+
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [rows]);
+
+  useEffect(() => {
+    setSelectedIds([]);
+  }, [tab]);
 
   return (
     <Box className="p-6 bg-white">
@@ -246,7 +330,7 @@ export default function AttendanceTable() {
           {/* Tabs */}
           <Tabs value={tab} onChange={(e, v) => setTab(v)}>
             <Tab label="Attendance" />
-            <Tab label="Regularization Request" />
+            <Tab label="Regularization" />
           </Tabs>
 
           {/* Filters */}
@@ -265,18 +349,22 @@ export default function AttendanceTable() {
               </Select>
             </FormControl>
 
-            <FormControl size="small" className="min-w-40">
-              <InputLabel>Role</InputLabel>
-              <Select
-                value={roleFilter}
-                label="Role"
-                onChange={(e) => setRoleFilter(e.target.value)}
-              >
-                <MenuItem value="all">All</MenuItem>
-                <MenuItem value="user">User</MenuItem>
-                <MenuItem value="manager">Manager</MenuItem>
-              </Select>
-            </FormControl>
+            {tab == 0 ? (
+              <FormControl size="small" className="min-w-40">
+                <InputLabel>Role</InputLabel>
+                <Select
+                  value={roleFilter}
+                  label="Role"
+                  onChange={(e) => setRoleFilter(e.target.value)}
+                >
+                  <MenuItem value="all">All</MenuItem>
+                  {tab == 0 ? <MenuItem value="user">User</MenuItem> : ""}
+                  <MenuItem value="manager">Manager</MenuItem>
+                </Select>
+              </FormControl>
+            ) : (
+              ""
+            )}
             <FormControl size="small" className="min-w-32">
               <InputLabel>Rows</InputLabel>
               <Select
@@ -287,7 +375,6 @@ export default function AttendanceTable() {
                   setPage(1);
                 }}
               >
-                <MenuItem value={2}>2</MenuItem>
                 <MenuItem value={5}>5</MenuItem>
                 <MenuItem value={10}>10</MenuItem>
               </Select>
@@ -295,10 +382,53 @@ export default function AttendanceTable() {
           </Box>
 
           {/* Table */}
-          <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper} className="rounded-xl">
+          <TableContainer
+            style={{ backgroundColor: "#F5F5F5" }}
+            component={Paper}
+            className="rounded-xl"
+          >
+            {tab === 1 && selectedIds.length > 0 && (
+              <Box className="flex gap-3 mb-3">
+                <Button
+                  variant="contained"
+                  color="success"
+                  onClick={handleBulkApprove}
+                >
+                  Approve Selected ({selectedIds.length})
+                </Button>
+
+                <Button
+                  variant="contained"
+                  color="error"
+                  onClick={() => {
+                    setRejectMode("bulk");
+                    setOpenRejectBox(true);
+                  }}
+                >
+                  Reject Selected
+                </Button>
+              </Box>
+            )}
+
             <Table>
               <TableHead className="bg-slate-50">
                 <TableRow>
+                  {tab === 1 && (
+                    <TableCell padding="checkbox">
+                      <Checkbox
+                        checked={
+                          pagedRows.length > 0 &&
+                          pagedRows.every((r) => selectedIds.includes(r.id))
+                        }
+                        indeterminate={
+                          pagedRows.some((r) => selectedIds.includes(r.id)) &&
+                          !pagedRows.every((r) => selectedIds.includes(r.id))
+                        }
+                        onChange={toggleAll}
+                      />
+                    </TableCell>
+                  )}
+
                   <TableCell>Date</TableCell>
                   <TableCell>Email</TableCell>
                   <TableCell>Punch In</TableCell>
@@ -307,14 +437,23 @@ export default function AttendanceTable() {
                   <TableCell>Break (m)</TableCell>
                   <TableCell>Overtime (m)</TableCell>
                   <TableCell>Status</TableCell>
-                  <TableCell>Reviewed</TableCell>
-                  <TableCell align="center">Action</TableCell>
+                  {tab === 0 && <TableCell>Reviewed By</TableCell>}
+                  {tab === 1 && <TableCell align="center">Action</TableCell>}
                 </TableRow>
               </TableHead>
 
               <TableBody>
-                {rows.map((row) => (
+                {pagedRows.map((row) => (
                   <TableRow key={row.id} hover>
+                    {tab === 1 && (
+                      <TableCell padding="checkbox">
+                        <Checkbox
+                          checked={selectedIds.includes(row.id)}
+                          onChange={() => toggleRow(row.id)}
+                        />
+                      </TableCell>
+                    )}
+
                     <TableCell>{row.requestDate}</TableCell>
 
                     <TableCell>
@@ -335,37 +474,43 @@ export default function AttendanceTable() {
                       />
                     </TableCell>
 
-                    <TableCell>
-                      {row.reviewedByEmail !== "admin"
-                        ? row?.reviewedByEmail?.toUpperCase()
-                        : "YOU"}
-                    </TableCell>
+                    {tab === 0 && (
+                      <TableCell>
+                        {row.reviewedByEmail !== "admin"
+                          ? row?.reviewedByEmail?.toUpperCase()
+                          : "YOU"}
+                      </TableCell>
+                    )}
 
-                    <TableCell align="center">
-                      {row.role === "manager" && row.status === "pending" ? (
-                        <Box className="flex gap-2 justify-center">
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="success"
-                            onClick={() => handleApprove(row)}
-                          >
-                            Accept
-                          </Button>
+                    {tab === 1 && (
+                      <TableCell align="center">
+                        {row.role === "manager" && row.status === "pending" && (
+                          <Box className="flex gap-2 justify-center">
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="success"
+                              onClick={() => handleApprove(row)}
+                            >
+                              Accept
+                            </Button>
 
-                          <Button
-                            size="small"
-                            variant="contained"
-                            color="error"
-                            onClick={() => handleReject(row)}
-                          >
-                            Reject
-                          </Button>
-                        </Box>
-                      ) : (
-                        "—"
-                      )}
-                    </TableCell>
+                            <Button
+                              size="small"
+                              variant="contained"
+                              color="error"
+                              onClick={() => {
+                                setRejectMode("single");
+                                setRejectId(row.id);
+                                setOpenRejectBox(true);
+                              }}
+                            >
+                              Reject
+                            </Button>
+                          </Box>
+                        )}
+                      </TableCell>
+                    )}
                   </TableRow>
                 ))}
               </TableBody>
@@ -373,7 +518,7 @@ export default function AttendanceTable() {
           </TableContainer>
           <Box className="flex justify-end mt-4">
             <Pagination
-              count={Math.ceil(total / limit)}
+              count={Math.max(1, Math.ceil(visibleRows.length / limit))}
               page={page}
               onChange={(e, value) => setPage(value)}
               color="primary"
@@ -381,6 +526,59 @@ export default function AttendanceTable() {
           </Box>
         </CardContent>
       </Card>
+
+      {openRejectBox && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-white w-full max-w-md rounded-xl p-6 shadow-lg">
+            <h2 className="text-lg font-semibold mb-3">
+              Reject Attendance Request
+            </h2>
+
+            <textarea
+              className="w-full border rounded-lg p-2 outline-none focus:ring-2 focus:ring-red-400"
+              rows="4"
+              placeholder="Enter reject reason..."
+              value={remark}
+              onChange={(e) => setRemark(e.target.value)}
+            />
+
+            <div className="flex justify-end gap-3 mt-4">
+              <button
+                className="px-4 py-2 border rounded-lg"
+                onClick={() => {
+                  setOpenRejectBox(false);
+                  setRemark("");
+                  setRejectId(null);
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="px-4 py-2 bg-red-500 text-white rounded-lg"
+                onClick={async () => {
+                  if (!remark.trim()) {
+                    toast.error("Reject reason required");
+                    return;
+                  }
+
+                  if (rejectMode === "bulk") {
+                    await handleBulkReject();
+                  } else {
+                    await handleReject(rejectId, remark);
+                  }
+
+                  setOpenRejectBox(false);
+                  setRemark("");
+                  setRejectId(null);
+                }}
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </Box>
   );
 }

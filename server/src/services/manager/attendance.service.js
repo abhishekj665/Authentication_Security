@@ -159,7 +159,7 @@ export const approveAttendanceRequest = async (managerId, id) => {
   }
 };
 
-export const rejectAttendanceRequest = async (managerId, id) => {
+export const rejectAttendanceRequest = async (managerId, id, data) => {
   try {
     const attendanceData = await AttendanceRequest.findOne({
       where: { id: id, status: "PENDING" },
@@ -170,9 +170,20 @@ export const rejectAttendanceRequest = async (managerId, id) => {
       throw new ExpressError(STATUS.BAD_REQUEST, "No Data Found");
     }
 
+    if (
+      !attendanceData.Attendance.punchOutAt ||
+      !attendanceData.Attendance.punchInAt
+    ) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "You can't reject attendance before punch out",
+      );
+    }
+
     attendanceData.reviewedBy = managerId;
     attendanceData.reviewedAt = new Date();
     attendanceData.status = "REJECTED";
+    attendanceData.remark = data.remark;
 
     await attendanceData.save();
 
@@ -180,6 +191,122 @@ export const rejectAttendanceRequest = async (managerId, id) => {
       success: true,
       data: attendanceData,
       message: "Attendance Rejected Successfully ",
+    };
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+export const bulkAttendanceRequestReject = async (
+  { ids, remark },
+  managerId,
+) => {
+  try {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "You have to select at least one request",
+      );
+    }
+
+    if (!remark?.trim()) {
+      throw new ExpressError(STATUS.BAD_REQUEST, "Remark is required");
+    }
+
+    const requests = await AttendanceRequest.findAll({
+      where: { id: ids, status: "PENDING" },
+      include: [
+        {
+          model: Attendance,
+          attributes: ["id", "punchOutAt"],
+        },
+      ],
+    });
+
+    if (requests.length !== ids.length) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Some requests not found or not pending",
+      );
+    }
+
+    const hasIncomplete = requests.some((r) => !r.Attendance?.punchOutAt);
+
+    if (hasIncomplete) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Cannot reject — some records have no punch out",
+      );
+    }
+
+    await AttendanceRequest.update(
+      {
+        status: "REJECTED",
+        remark,
+        reviewedBy: managerId,
+      },
+      {
+        where: { id: ids, status: "PENDING" },
+      },
+    );
+
+    return {
+      success: true,
+      message: "Rejected successfully",
+    };
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+export const bulkAttendanceRequestApprove = async ({ ids }, managerId) => {
+  try {
+    if (!Array.isArray(ids) || ids.length === 0) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "You have to select at least one request",
+      );
+    }
+
+    const requests = await AttendanceRequest.findAll({
+      where: { id: ids, status: "PENDING" },
+      include: [
+        {
+          model: Attendance,
+          attributes: ["id", "punchOutAt"],
+        },
+      ],
+    });
+
+    if (requests.length !== ids.length) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Some requests not found or not pending",
+      );
+    }
+
+    const hasIncomplete = requests.some((r) => !r.Attendance?.punchOutAt);
+
+    if (hasIncomplete) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Cannot approve — some records have no punch out",
+      );
+    }
+
+    await AttendanceRequest.update(
+      {
+        status: "APPROVED",
+        reviewedBy: managerId,
+      },
+      {
+        where: { id: ids, status: "PENDING" },
+      },
+    );
+
+    return {
+      success: true,
+      message: "Approved successfully",
     };
   } catch (error) {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);

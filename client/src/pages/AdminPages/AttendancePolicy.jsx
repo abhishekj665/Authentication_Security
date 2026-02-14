@@ -28,7 +28,7 @@ const initialForm = {
   isDefault: true,
   startTime: "",
   endTime: "",
-  breakTime: "",
+  breakMinute: "",
   gracePunchInTime: "",
   gracePunchOutTime: "",
   graceHalfDayMinute: "",
@@ -36,7 +36,7 @@ const initialForm = {
   graceLateMinute: "",
   weekends: [],
   overtimeEnable: false,
-  overtimeHours: "",
+  overtimeStartTime: "",
   overtimeMinutes: "",
 };
 
@@ -65,7 +65,15 @@ export default function AttendancePolicyInline() {
       const api = r.data;
       const ot = api.OvertimePolicy || {};
 
-      const toHHMM = (t) => (t ? t.slice(0, 5) : "");
+      const toHHMM = (t) => {
+        if (!t) return "";
+
+        if (typeof t === "string") return t.slice(0, 5);
+
+        if (t instanceof Date) return t.toTimeString().slice(0, 5);
+
+        return "";
+      };
 
       const data = {
         ...initialForm,
@@ -76,7 +84,8 @@ export default function AttendancePolicyInline() {
 
         startTime: toHHMM(api.startTime),
         endTime: toHHMM(api.endTime),
-        breakTime: toHHMM(api.breakTime),
+        breakMinute: api.breakMinute ?? "",
+
         gracePunchInTime: toHHMM(api.gracePunchInTime),
         gracePunchOutTime: toHHMM(api.gracePunchOutTime),
 
@@ -85,7 +94,7 @@ export default function AttendancePolicyInline() {
         graceLateMinute: api.graceLateMinute,
 
         overtimeEnable: !!ot.enable,
-        overtimeHours: toHHMM(ot.overtimeHours),
+        overtimeStartTime: toHHMM(ot.overtimeStartTime),
         overtimeMinutes: ot.overtimeMinutes ?? "",
       };
 
@@ -115,7 +124,7 @@ export default function AttendancePolicyInline() {
       isDefault: form.isDefault,
       startTime: form.startTime,
       endTime: form.endTime,
-      breakTime: form.breakTime || null,
+      breakMinute: Number(form.breakMinute || 0),
       gracePunchInTime: form.gracePunchInTime || null,
       gracePunchOutTime: form.gracePunchOutTime || null,
       graceHalfDayMinute: Number(form.graceHalfDayMinute || 0),
@@ -126,7 +135,7 @@ export default function AttendancePolicyInline() {
 
     const overtimePolicy = {
       enable: form.overtimeEnable,
-      overtimeHours: form.overtimeHours || null,
+      overtimeStartTime: form.overtimeStartTime || null,
       overtimeMinutes: Number(form.overtimeMinutes || 0),
     };
 
@@ -220,11 +229,13 @@ export default function AttendancePolicyInline() {
             disabled={!editing}
           />
 
-          <TimePicker
-            label="Break Duration"
-            value={timeValue(form.breakTime)}
-            onChange={(v) => setTime("breakTime", v)}
+          <TextField
+            label="Break Duration (minutes)"
+            type="number"
             disabled={!editing}
+            value={form.breakMinute}
+            onChange={(e) => update("breakMinute", e.target.value)}
+            inputProps={{ min: 0, max: 600 }}
           />
         </Box>,
       )}
@@ -307,8 +318,8 @@ export default function AttendancePolicyInline() {
           <Box className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <TimePicker
               label="Overtime Starts After"
-              value={timeValue(form.overtimeHours)}
-              onChange={(v) => setTime("overtimeHours", v)}
+              value={timeValue(form.overtimeStartTime)}
+              onChange={(v) => setTime("overtimeStartTime", v)}
               disabled={!editing || !form.overtimeEnable}
             />
 
