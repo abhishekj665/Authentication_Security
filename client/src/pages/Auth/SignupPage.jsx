@@ -94,6 +94,7 @@ function SignupPage() {
       <div className="w-full">
         <Box
           sx={{
+            minHeight : "100vh",
             display: "flex",
             flexDirection: { xs: "column", md: "row" },
             alignItems: "center",
