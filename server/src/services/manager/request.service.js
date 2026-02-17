@@ -7,6 +7,12 @@ import {
 import ExpressError from "../../utils/Error.utils.js";
 import { Op } from "sequelize";
 import { sequelize } from "../../config/db.js";
+import {
+  assetRequestMailTemplate,
+  assetApprovedMailTemplate,
+  assetRejectedMailTemplate,
+} from "../../utils/mailTemplate.utils.js";
+import { sendMail } from "../../config/otpService.js";
 
 export const getRequestDataService = async () => {
   try {
@@ -24,6 +30,7 @@ export const getRequestDataService = async () => {
 
         {
           model: Asset,
+          as: "Asset",
           attributes: ["id", "title", "price", "status", "availableQuantity"],
         },
         { model: User, as: "reviewer", attributes: ["id", "email", "role"] },
@@ -41,7 +48,23 @@ export const getRequestDataService = async () => {
 };
 
 export const rejectRequestService = async (id, remark, manager) => {
-  const request = await AssetRequest.findByPk(id);
+  const request = await AssetRequest.findByPk(id, {
+    include: [
+      { model: User, as: "User" },
+      {
+        model: Asset,
+        as: "Asset",
+        attributes: [
+          "id",
+          "title",
+          "price",
+          "status",
+          "availableQuantity",
+          "category",
+        ],
+      },
+    ],
+  });
 
   if (!request || request.status !== "pending") {
     throw new ExpressError(400, "Invalid request");
@@ -51,6 +74,23 @@ export const rejectRequestService = async (id, remark, manager) => {
   request.adminRemark = remark;
   request.reviewedBy = manager.id;
   await request.save();
+
+  const managerData = await User.findByPk(manager.id, {
+    attributes: ["email"],
+  });
+
+  const html = assetRejectedMailTemplate({
+    userName: request.User.first_name || request.User.email.split("@")[0],
+    userEmail: request.User.email,
+    assetName: request.Asset.title,
+    quantity: request.quantity,
+    assetType: request.Asset.category,
+    requestDate: request.createdAt.toLocaleString("en-IN"),
+    reason: remark,
+    managerName: managerData.email.split("@")[0],
+  });
+
+  sendMail(request.User.email, "Asset Request Rejected", html);
 
   return {
     success: true,
@@ -63,7 +103,27 @@ export const approveRequestService = async (id, manager) => {
   const t = await sequelize.transaction();
 
   try {
-    const request = await AssetRequest.findByPk(id, { transaction: t });
+    const request = await AssetRequest.findByPk(
+      id,
+      {
+        include: [
+          { model: User, as: "User" },
+          {
+            model: Asset,
+            as: "Asset",
+            attributes: [
+              "id",
+              "title",
+              "price",
+              "status",
+              "availableQuantity",
+              "category",
+            ],
+          },
+        ],
+      },
+      { transaction: t },
+    );
 
     if (!request || request.status !== "pending") {
       throw new ExpressError(400, "Invalid request");
@@ -112,6 +172,23 @@ export const approveRequestService = async (id, manager) => {
     await request.save({ transaction: t });
 
     await t.commit();
+
+    const managerData = await User.findByPk(manager.id, {
+      attributes: ["email"],
+    });
+
+    const html = assetApprovedMailTemplate({
+      userName: request.User.first_name || request.User.email.split("@")[0],
+      userEmail: request.User.email,
+      assetName: request.Asset.title,
+      quantity: request.quantity,
+      assetType: request.Asset.category,
+      requestDate: request.createdAt.toLocaleString("en-IN"),
+      remark: "Approved by manager",
+      managerName: managerData.email.split("@")[0],
+    });
+
+    sendMail(request.User.email, "Asset Request Approved", html);
     return {
       success: true,
       userId: request.userId,
@@ -126,6 +203,11 @@ export const approveRequestService = async (id, manager) => {
 export const createAssetRequestService = async (data, user) => {
   const { assetId, quantity, description } = data;
   const userId = user.id;
+
+  const userData = await User.findOne({
+    where: { id: user.id },
+    attributes: ["email", "first_name"],
+  });
 
   if (!assetId || !quantity) {
     throw new ExpressError(400, "assetId and quantity are required");
@@ -142,6 +224,26 @@ export const createAssetRequestService = async (data, user) => {
     quantity,
     description,
   });
+
+  const adminData = await User.findOne({
+    where: { role: "admin" },
+    attributes: ["email"],
+  });
+
+  const assetData = await Asset.findByPk(assetId);
+
+  const html = assetRequestMailTemplate({
+    userName: userData.first_name || userData.email.split("@")[0],
+    userEmail: userData.email,
+    assetName: asset.title,
+    quantity,
+    assetType: assetData.category,
+    requestDate: new Date().toLocaleString("en-IN"),
+    reason: description,
+    managerName: adminData.email.split("@")[0],
+  });
+
+  sendMail(adminData.email, "New Asset Request", html);
 
   return { success: true, message: "Asset request created successfully" };
 };

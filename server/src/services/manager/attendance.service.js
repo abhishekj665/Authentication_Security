@@ -5,6 +5,11 @@ import {
   User,
 } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
+import {
+  attendanceApprovedMailTemplate,
+  attendanceRejectedMailTemplate,
+} from "../../utils/attendanceMail.utils.js";
+import { sendMail } from "../../config/otpService.js";
 
 export const getAllAttendance = async (filters = {}, managerId) => {
   try {
@@ -126,7 +131,10 @@ export const approveAttendanceRequest = async (managerId, id) => {
   try {
     const attendanceData = await AttendanceRequest.findOne({
       where: { id: id, status: "PENDING" },
-      include: [{ model: Attendance, attributes: ["punchOutAt", "punchInAt"] }],
+      include: [
+        { model: Attendance, attributes: ["punchOutAt", "punchInAt"] },
+        { model: User, as: "requester", attributes: ["email", "role"] },
+      ],
     });
 
     if (!attendanceData) {
@@ -149,6 +157,21 @@ export const approveAttendanceRequest = async (managerId, id) => {
 
     await attendanceData.save();
 
+    const manager = await User.findByPk(managerId, {
+      attributes: ["email"],
+    });
+
+    const html = attendanceApprovedMailTemplate({
+      userName: attendanceData.requester.email.split("@")[0],
+      managerName: manager.email.split("@")[0],
+      date: new Date().toLocaleString("en-IN"),
+      punchInTime: attendanceData.Attendance.punchInAt,
+      punchOutTime: attendanceData.Attendance.punchOutAt,
+      remark: "Your attendance is approved",
+    });
+
+    sendMail(attendanceData.requester.email, "Attendance Approved", html);
+
     return {
       success: true,
       data: attendanceData,
@@ -161,9 +184,13 @@ export const approveAttendanceRequest = async (managerId, id) => {
 
 export const rejectAttendanceRequest = async (managerId, id, data) => {
   try {
+    
     const attendanceData = await AttendanceRequest.findOne({
       where: { id: id, status: "PENDING" },
-      include: [{ model: Attendance, attributes: ["punchOutAt", "punchInAt"] }],
+      include: [
+        { model: Attendance, attributes: ["punchOutAt", "punchInAt"] },
+        { model: User, as: "requester", attributes: ["email", "role"] },
+      ],
     });
 
     if (!attendanceData) {
@@ -186,6 +213,21 @@ export const rejectAttendanceRequest = async (managerId, id, data) => {
     attendanceData.remark = data.remark;
 
     await attendanceData.save();
+
+    const manager = await User.findByPk(managerId, {
+      attributes: ["email"],
+    });
+
+    const html = attendanceRejectedMailTemplate({
+      userName: attendanceData.requester.email.split("@")[0],
+      managerName: manager.email.split("@")[0],
+      date: new Date().toLocaleString("en-IN"),
+      punchInTime: attendanceData.Attendance.punchInAt,
+      punchOutTime: attendanceData.Attendance.punchOutAt,
+      remark: data.remark,
+    });
+
+    sendMail(attendanceData.requester.email, "Attendance Rejected", html);
 
     return {
       success: true,

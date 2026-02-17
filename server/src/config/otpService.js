@@ -1,4 +1,4 @@
-import { OTP } from "../models/Associations.model.js";
+import { OTP, User } from "../models/Associations.model.js";
 import { generateHash } from "../utils/hash.utils.js";
 import { env } from "./env.js";
 import * as brevo from "@getbrevo/brevo";
@@ -35,6 +35,7 @@ export const sendMailOtp = async (email, otp) => {
 
 export async function sendMail(to, subject, html) {
   try {
+    
     const mail = new brevo.SendSmtpEmail();
 
     mail.to = [{ email: to }];
@@ -47,12 +48,14 @@ export async function sendMail(to, subject, html) {
 
     const res = await apiInstance.sendTransacEmail(mail);
     console.log("BREVO SENT:", res.body?.messageId);
-    return res;
+    return res
   } catch (err) {
     console.error("BREVO FAIL:", err.response?.body || err.message);
     throw err;
   }
 }
+
+
 
 export const findOtpData = async (email, purpose) => {
   return OTP.findOne({

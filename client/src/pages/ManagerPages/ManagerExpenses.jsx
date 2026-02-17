@@ -40,6 +40,13 @@ const ManagerExpensesPage = () => {
   const [openPreview, setOpenPreview] = useState(false);
   const [previewUrl, setPreviewUrl] = useState(null);
 
+  const [openApproveBox, setOpenApproveBox] = useState(false);
+  const [approveId, setApproveId] = useState(null);
+  const [approveAmount, setApproveAmount] = useState("");
+  const [approveRemark, setApproveRemark] = useState("");
+  const [approveUserEmail, setApproveUserEmail] = useState("");
+  const [approveRequestedAmount, setApproveRequestedAmount] = useState("");
+
   const role = user?.role;
 
   const fetchExpenses = async () => {
@@ -48,14 +55,22 @@ const ManagerExpensesPage = () => {
     if (response?.success) setExpenses(response.data);
   };
 
-  const handleApprove = async (id) => {
-    const isConfirmed = window.confirm("Approve this expense?");
-    if (!isConfirmed) return;
+  const handleApproveSubmit = async () => {
+    if (!approveAmount) {
+      toast.error("Enter approved amount");
+      return;
+    }
 
-    const response = await approveExpense(id);
+    const response = await approveExpense(approveId, {
+      approvedAmount: approveAmount,
+      remark: approveRemark,
+    });
 
     if (response.success) {
       toast.success("Expense approved");
+      setOpenApproveBox(false);
+      setApproveRemark("");
+      setApproveAmount("");
     } else {
       toast.error(response.message);
     }
@@ -169,7 +184,13 @@ const ManagerExpensesPage = () => {
                             variant="contained"
                             color="success"
                             size="small"
-                            onClick={() => handleApprove(exp.id)}
+                            onClick={() => {
+                              setApproveId(exp.id);
+                              setApproveUserEmail(exp.employee.email);
+                              setApproveRequestedAmount(exp.amount);
+                              setApproveAmount(exp.amount);
+                              setOpenApproveBox(true);
+                            }}
                           >
                             Approve
                           </Button>
@@ -240,6 +261,71 @@ const ManagerExpensesPage = () => {
           </div>
         </div>
       )}
+      {openApproveBox && (
+        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center">
+          <div className="bg-white w-full max-w-md rounded-xl p-6 shadow-lg">
+            <h2 className="text-lg font-semibold mb-4">Approve Expense</h2>
+
+            <div className="space-y-3 text-sm">
+              <div>
+                <label className="font-medium">Requester</label>
+                <div className="border rounded p-2 bg-gray-50">
+                  {approveUserEmail.split("@")[0]}
+                </div>
+              </div>
+
+              <div>
+                <label className="font-medium">Requested Amount</label>
+                <div className="border rounded p-2 bg-gray-50">
+                  ₹ {approveRequestedAmount}
+                </div>
+              </div>
+
+              <div>
+                <label className="font-medium">Approved Amount</label>
+                <input
+                  type="number"
+                  className="w-full border rounded p-2"
+                  value={approveAmount}
+                  onChange={(e) => setApproveAmount(e.target.value)}
+                />
+              </div>
+
+              <div>
+                <label className="font-medium">Remark</label>
+                <textarea
+                  rows="3"
+                  className="w-full border rounded p-2"
+                  value={approveRemark}
+                  onChange={(e) => setApproveRemark(e.target.value)}
+                  placeholder="Enter approval remark..."
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 mt-5">
+              <button
+                className="px-4 py-2 border rounded-lg"
+                onClick={() => {
+                  setOpenApproveBox(false);
+                  setApproveRemark("");
+                  setApproveAmount("");
+                }}
+              >
+                Cancel
+              </button>
+
+              <button
+                className="px-4 py-2 bg-green-600 text-white rounded-lg"
+                onClick={handleApproveSubmit}
+              >
+                Approve
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {openPreview && (
         <div className="fixed inset-0 bg-black/60 z-50 flex items-center justify-center">
           <div className="bg-white w-full max-w-3xl h-[85vh] rounded-xl shadow-lg flex flex-col">

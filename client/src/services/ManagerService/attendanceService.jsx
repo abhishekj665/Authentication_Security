@@ -42,10 +42,11 @@ export const approveAttendance = async (id) => {
   }
 };
 
-export const rejectAttendance = async (id) => {
+export const rejectAttendance = async (id, remark) => {
   try {
-    console.log(id);
-    let response = await API.patch(`/manager/attendance/reject/${id}`);
+    let response = await API.patch(`/manager/attendance/reject/${id}`, {
+      remark,
+    });
 
     return response.data;
   } catch (error) {

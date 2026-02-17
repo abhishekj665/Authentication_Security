@@ -4,6 +4,11 @@ import ExpressError from "../../utils/Error.utils.js";
 
 import { User } from "../../models/Associations.model.js";
 import bcrypt from "bcrypt";
+import { sequelize } from "../../config/db.js";
+
+import { expenseMailToManagerTemplate } from "../../utils/mailTemplate.utils.js";
+import { now } from "sequelize/lib/utils";
+import { sendMail } from "../../config/otpService.js";
 
 export const getExpenseDataService = async (id) => {
   try {
@@ -45,56 +50,66 @@ export const getExpenseDataService = async (id) => {
 };
 
 export const newExpensesService = async (data, user) => {
+  const transaction = await sequelize.transaction();
+  let committed = false;
+
   try {
     const expenseAccount = await Account.findOne({
       where: { userId: user.id },
+      transaction,
     });
 
     if (!expenseAccount) {
-      return {
-        success: false,
-        code: "NO_ACCOUNT",
-        message: "Please create account first",
-      };
+      throw new Error("Please create account first");
     }
 
-    let { amount, expenseDate, pin, receiptUrl } = data;
+    const { amount, expenseDate, pin, receiptUrl } = data;
 
     const verify = await bcrypt.compare(String(pin), expenseAccount.pin);
-
-    if (!verify) {
-      return {
-        success: false,
-        message: "Invalid PIN",
-      };
-    }
+    if (!verify) throw new Error("Invalid PIN");
 
     const userData = await User.findOne({
       where: { id: user.id },
-      attributes: { include: "managerId" },
+      attributes: ["managerId", "email", "first_name"],
+      include: [{ model: User, as: "manager" }],
+      transaction,
     });
 
-    if (!userData || userData.managerId === null) {
-      return {
-        success: false,
-        message:
-          "You are not asssigned to manager yet, So you can't create a request yet",
-      };
+    if (!userData?.managerId) {
+      throw new Error("Manager not assigned");
     }
 
-    const expense = await Expenses.create({
-      userId: user.id,
-      amount,
-      expenseDate,
-      receiptUrl,
-      status: "pending",
-    });
+    const expense = await Expenses.create(
+      {
+        userId: user.id,
+        amount,
+        expenseDate,
+        receiptUrl,
+        status: "pending",
+      },
+      { transaction },
+    );
 
-    if (!expense) {
-      return {
-        success: false,
-        message: "Expense creation failed",
-      };
+    await transaction.commit();
+    committed = true;
+
+    try {
+      const html = expenseMailToManagerTemplate({
+        managerName:
+          userData.manager.first_name || userData.manager.email.split("@")[0],
+
+        userName: userData.first_name || userData.email.split("@")[0],
+        userEmail: userData.email,
+        billUrl: receiptUrl,
+        amount,
+        date: expenseDate,
+        time: new Date().toLocaleTimeString("en-IN"),
+        category: "Expense",
+      });
+
+      sendMail(userData.manager.email, "New Expense Request", html);
+    } catch (mailErr) {
+      console.error("Mail failed:", mailErr);
     }
 
     return {
@@ -103,6 +118,11 @@ export const newExpensesService = async (data, user) => {
       message: "Expense created successfully",
     };
   } catch (error) {
+    if (!committed) {
+      try {
+        await transaction.rollback();
+      } catch {}
+    }
     throw new ExpressError(STATUS.NOT_ACCEPTABLE, error.message);
   }
 };

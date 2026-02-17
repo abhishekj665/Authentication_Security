@@ -232,7 +232,7 @@ export default function UserAttendanceData() {
         <CardContent>
           <Tabs value={tab} onChange={handleSwitch}>
             <Tab label="Attendance" />
-            <Tab label="PENDING Requests" />
+            <Tab label="Regularization Requests" />
           </Tabs>
 
           <Box className="flex gap-4 justify-end my-4">

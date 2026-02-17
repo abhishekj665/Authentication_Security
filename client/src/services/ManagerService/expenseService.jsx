@@ -12,9 +12,11 @@ export const getAllExpenses = async () => {
   }
 };
 
-export const approveExpense = async (id) => {
+export const approveExpense = async (id, data) => {
   try {
-    let response = await API.put(`/manager/expense/approve/${id}`);
+    let response = await API.put(`/manager/expense/approve/${id}`, {
+      data: data,
+    });
     return response.data;
   } catch (error) {
     return {

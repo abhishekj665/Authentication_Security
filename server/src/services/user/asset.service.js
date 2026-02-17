@@ -5,6 +5,8 @@ import { Op } from "sequelize";
 import ExpressError from "../../utils/Error.utils.js";
 
 import STATUS from "../../constants/Status.js";
+import { assetRequestMailTemplate } from "../../utils/mailTemplate.utils.js";
+import { sendMail } from "../../config/otpService.js";
 
 export const createAssetRequestService = async (data, user) => {
   const { assetId, quantity, description } = data;
@@ -12,10 +14,9 @@ export const createAssetRequestService = async (data, user) => {
 
   const userData = await User.findOne({
     where: { id: user.id },
-    attributes: { include: "managerId" },
+    attributes: ["managerId", "email", "first_name"],
+    include: [{ model: User, as: "manager" }],
   });
-
-  
 
   if (userData.managerId === null || userData.managerId === undefined) {
     return {
@@ -39,6 +40,23 @@ export const createAssetRequestService = async (data, user) => {
     quantity,
     description,
   });
+
+  const assetData = await Asset.findByPk(assetId);
+
+  
+
+  const html = assetRequestMailTemplate({
+    userName: userData.first_name || userData.email.split("@")[0],
+    userEmail: userData.email,
+    assetName: asset.title,
+    quantity,
+    assetType: assetData.category,
+    requestDate: new Date().toLocaleString("en-IN"),
+    reason: description,
+    managerName: userData.manager.email.split("@")[0],
+  });
+
+  sendMail(userData.manager.email, "New Asset Request", html);
 
   return { success: true, message: "Asset request created successfully" };
 };

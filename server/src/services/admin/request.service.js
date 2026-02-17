@@ -7,6 +7,11 @@ import {
 import ExpressError from "../../utils/Error.utils.js";
 
 import { sequelize } from "../../config/db.js";
+import {
+  assetApprovedMailTemplate,
+  assetRejectedMailTemplate,
+} from "../../utils/mailTemplate.utils.js";
+import { sendMail } from "../../config/otpService.js";
 
 export const getRequestDataService = async () => {
   try {
@@ -40,7 +45,25 @@ export const getRequestDataService = async () => {
 };
 
 export const rejectRequestService = async (id, remark, adminId) => {
-  const request = await AssetRequest.findByPk(id);
+  const request = await AssetRequest.findByPk(id, {
+    include: [
+      { model: User },
+      {
+        model: Asset,
+        as: "Asset",
+        attributes: [
+          "id",
+          "title",
+          "price",
+          "status",
+          "availableQuantity",
+          "category",
+        ],
+      },
+    ],
+  });
+
+  
 
   if (!request || request.status !== "pending") {
     throw new ExpressError(400, "Invalid request");
@@ -51,6 +74,23 @@ export const rejectRequestService = async (id, remark, adminId) => {
   request.reviewedBy = adminId;
   await request.save();
 
+  const adminData = await User.findByPk(adminId, {
+    attributes: ["email"],
+  });
+
+  const html = assetRejectedMailTemplate({
+    userName: request.User.first_name || request.User.email.split("@")[0],
+    userEmail: request.User.email,
+    assetName: request.Asset.title,
+    quantity: request.quantity,
+    assetType: request.Asset.category,
+    requestDate: request.createdAt.toLocaleString("en-IN"),
+    reason: remark,
+    managerName: adminData.email.split("@")[0],
+  });
+
+  sendMail(request.User.email, "Asset Request Rejected", html);
+
   return {
     success: true,
     userId: request.userId,
@@ -60,9 +100,27 @@ export const rejectRequestService = async (id, remark, adminId) => {
 
 export const approveRequestService = async (id, adminId) => {
   const t = await sequelize.transaction();
+  let committed = false;
 
   try {
-    const request = await AssetRequest.findByPk(id, { transaction: t });
+    const request = await AssetRequest.findByPk(id, {
+      include: [
+        { model: User, as: "User" },
+        {
+          model: Asset,
+          as: "Asset",
+          attributes: [
+            "id",
+            "title",
+            "price",
+            "status",
+            "availableQuantity",
+            "category",
+          ],
+        },
+      ],
+      transaction: t,
+    });
 
     if (!request || request.status !== "pending") {
       throw new ExpressError(400, "Invalid request");
@@ -71,17 +129,11 @@ export const approveRequestService = async (id, adminId) => {
     const asset = await Asset.findByPk(request.assetId, { transaction: t });
 
     if (!asset || asset.availableQuantity < request.quantity) {
-      return {
-        success: false,
-        message: "Not enough quantity available",
-      };
+      throw new ExpressError(400, "Not enough quantity available");
     }
 
-    if (!asset || asset.status !== "available") {
-      return {
-        success: false,
-        message: "Not Assigned, Asset not available yet",
-      };
+    if (asset.status !== "available") {
+      throw new ExpressError(400, "Asset not available yet");
     }
 
     const totalCredited = await UserAsset.sum("quantity", {
@@ -111,13 +163,34 @@ export const approveRequestService = async (id, adminId) => {
     await request.save({ transaction: t });
 
     await t.commit();
+    committed = true;
+
+    const adminData = await User.findByPk(adminId, {
+      attributes: ["email"],
+    });
+
+    const html = assetApprovedMailTemplate({
+      userName: request.User.first_name || request.User.email.split("@")[0],
+      userEmail: request.User.email,
+      assetName: request.Asset.title,
+      quantity: request.quantity,
+      assetType: request.Asset.category,
+      requestDate: request.createdAt.toLocaleString("en-IN"),
+      remark: "Approved by admin",
+      managerName: adminData.email.split("@")[0],
+    });
+
+    sendMail(request.User.email, "Asset Request Approved", html);
+
     return {
       success: true,
       userId: request.userId,
       message: "Request approved and asset credited",
     };
   } catch (error) {
-    await t.rollback();
+    if (!committed) {
+      await t.rollback();
+    }
     throw error;
   }
 };

@@ -12,6 +12,12 @@ import ExpressError from "../../utils/Error.utils.js";
 import { Op } from "sequelize";
 import { sequelize } from "../../config/db.js";
 import { calculateWorkedSecondsFromLogs } from "../../utils/calaculateTime.utils.js";
+import {
+  getAttendanceReceiver,
+  buildPunchInMailData,
+  attendanceMailTemplate,
+} from "../../utils/attendanceMail.utils.js";
+import { sendMail } from "../../config/otpService.js";
 
 const getActivePolicy = async (date, transaction) => {
   const d = date.toISOString().slice(0, 10);
@@ -29,6 +35,8 @@ const getActivePolicy = async (date, transaction) => {
 
 export const registerInService = async (userId, { data }, ipAddress) => {
   const transaction = await sequelize.transaction();
+  let committed = false;
+  let mailPayload = null;
   try {
     const now = new Date();
     const { lat, lng } = data;
@@ -112,6 +120,9 @@ export const registerInService = async (userId, { data }, ipAddress) => {
     const lateMin = Math.floor((now - policyStart) / 60000);
     const isLate = lateMin > (policy.graceLateMinute || 0);
 
+    let isFirstPunch = false;
+    let mailMeta = null;
+
     if (!row) {
       row = await Attendance.create(
         {
@@ -124,18 +135,7 @@ export const registerInService = async (userId, { data }, ipAddress) => {
         { transaction },
       );
 
-      let requestedTo = null;
-
-      if (user.role === "user") {
-        requestedTo = user.managerId;
-      } else if (user.role === "manager") {
-        const admin = await User.findOne({
-          where: { role: "admin" },
-          attributes: ["id"],
-          transaction,
-        });
-        requestedTo = admin?.id;
-      }
+      const requestedTo = await getAttendanceReceiver(user, transaction);
 
       if (requestedTo) {
         await AttendanceRequest.create(
@@ -148,6 +148,9 @@ export const registerInService = async (userId, { data }, ipAddress) => {
           },
           { transaction },
         );
+
+        mailMeta = { requestedTo };
+        isFirstPunch = true;
       }
     } else {
       row.lastInAt = now;
@@ -171,6 +174,46 @@ export const registerInService = async (userId, { data }, ipAddress) => {
     );
 
     await transaction.commit();
+    committed = true;
+
+    if (isFirstPunch && mailMeta?.requestedTo) {
+      mailPayload = {
+        requestedTo: mailMeta.requestedTo,
+        user,
+        now,
+        lat,
+        lng,
+      };
+    }
+
+    if (mailPayload) {
+      try {
+        const receiver = await User.findByPk(mailPayload.requestedTo, {
+          attributes: ["email", "first_name"],
+        });
+
+        if (receiver) {
+          const mailData = buildPunchInMailData(
+            mailPayload.user,
+            mailPayload.now,
+            ipAddress,
+            mailPayload.lat,
+            mailPayload.lng,
+          );
+
+          mailData.receiverName = receiver.first_name;
+
+          const html = attendanceMailTemplate(mailData);
+
+          await sendMail(receiver.email, "Attendance Punch-In Alert", html);
+          console.log("mail sent to", receiver.email);
+        } else {
+          console.log("receiver not found");
+        }
+      } catch (mailErr) {
+        console.error("Mail failed:", mailErr);
+      }
+    }
 
     return {
       success: true,
@@ -178,8 +221,10 @@ export const registerInService = async (userId, { data }, ipAddress) => {
       data: { lastInAt: now },
     };
   } catch (e) {
-    await transaction.rollback();
-    throw new ExpressError(STATUS.BAD_REQUEST, e.message);
+    if (!committed) {
+      await transaction.rollback();
+      throw new ExpressError(STATUS.BAD_REQUEST, e.message);
+    }
   }
 };
 

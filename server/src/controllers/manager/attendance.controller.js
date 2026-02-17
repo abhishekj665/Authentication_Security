@@ -71,6 +71,7 @@ export const rejectAttendanceRequest = async (req, res, next) => {
     const response = await attendanceService.rejectAttendanceRequest(
       req.user.id,
       req.params.id,
+      req.body
     );
 
     if (response.success) {

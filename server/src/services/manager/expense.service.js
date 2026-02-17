@@ -3,6 +3,8 @@ import { Expenses } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 import { User } from "../../models/Associations.model.js";
 import { Op } from "sequelize";
+import { expenseApprovedMailTemplate, expenseRejectedMailTemplate } from "../../utils/mailTemplate.utils.js";
+import { sendMail } from "../../config/otpService.js";
 
 export const getAllExpenseDataService = async (managerId) => {
   try {
@@ -41,9 +43,11 @@ export const getAllExpenseDataService = async (managerId) => {
   }
 };
 
-export const approveExpenseRequestService = async (id, admin) => {
+export const approveExpenseRequestService = async (id, data, manager) => {
   try {
     let expenseData = await Expenses.findByPk(id);
+
+    const approvedAmount = Number(data.approvedAmount);
 
     if (expenseData.status != "pending") {
       return {
@@ -51,20 +55,42 @@ export const approveExpenseRequestService = async (id, admin) => {
         message: "Can not update this request",
       };
     }
+    if (expenseData.amount < approvedAmount || approvedAmount < 0) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "You can't approved this much amount",
+      );
+    }
     expenseData.status = "approved";
     expenseData.updatedAt = new Date();
-    expenseData.adminRemark = "Request Approved";
-    expenseData.reviewedBy = admin.id;
+    expenseData.adminRemark = data.remark;
+    expenseData.reviewedBy = manager.id;
     expenseData.reviewedAt = new Date();
+    expenseData.approvedAmount = approvedAmount;
 
     await expenseData.save();
 
-    let data = await Expenses.findByPk(id);
+    const userExpenseData = await Expenses.findByPk(id);
+
+    const user = await User.findByPk(userExpenseData.userId, {
+      include: [{ model: User, as: "manager" }],
+    });
+
+    const html = expenseApprovedMailTemplate({
+      userName: user.first_name || user.email.split("@")[0],
+      amountRequested: expenseData.amount,
+      amountApproved: data.approvedAmount,
+      remark: data.remark,
+      date: expenseData.expenseDate,
+      managerName: user.manager.first_name || user.manager.email.split("@")[0],
+    });
+
+    sendMail(user.manager.email, "Expense Approved", html);
 
     return {
       success: true,
-      data: data,
-      userId: data.userId,
+      data: userExpenseData,
+      userId: userExpenseData.userId,
       message: "Request Update Successfully",
     };
   } catch (error) {
@@ -72,7 +98,7 @@ export const approveExpenseRequestService = async (id, admin) => {
   }
 };
 
-export const rejectExpenseRequestService = async (id, admin, adminRemark) => {
+export const rejectExpenseRequestService = async (id, manager, managerRemark) => {
   try {
     let expenseData = await Expenses.findByPk(id);
 
@@ -84,18 +110,34 @@ export const rejectExpenseRequestService = async (id, admin, adminRemark) => {
     }
     expenseData.status = "rejected";
     expenseData.updatedAt = new Date();
-    expenseData.adminRemark = adminRemark;
-    expenseData.reviewedBy = admin.id;
+    expenseData.adminRemark = managerRemark;
+    expenseData.reviewedBy = manager.id;
     expenseData.reviewedAt = new Date();
 
     await expenseData.save();
 
-    expenseData = await Expenses.findByPk(id);
+    const userExpenseData = await Expenses.findByPk(id);
+
+    const user = await User.findByPk(userExpenseData.userId, {
+      include: [{ model: User, as: "manager" }],
+    });
+
+    const html = expenseRejectedMailTemplate({
+      userName: user.first_name || user.email.split("@")[0],
+      amountRequested: expenseData.amount,
+      remark: managerRemark,
+      date: expenseData.expenseDate,
+      managerName: user.manager.first_name || user.manager.email.split("@")[0],
+
+    })
+
+    sendMail(user.manager.email, "Expense Rejected", html);
+
 
     return {
       success: true,
-      data: expenseData,
-      userId: expenseData.userId,
+      data: userExpenseData,
+      userId: userExpenseData.userId,
       message: "Request Update Successfully",
     };
   } catch (error) {

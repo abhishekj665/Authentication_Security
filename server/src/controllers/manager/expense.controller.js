@@ -21,6 +21,7 @@ export const approveExpenseRequest = async (req, res, next) => {
   try {
     let response = await expensesService.approveExpenseRequestService(
       req.params.id,
+      req.body.data,
       req.user
     );
 
