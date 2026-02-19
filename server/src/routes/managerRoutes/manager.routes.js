@@ -5,7 +5,8 @@ import { requestRouter } from "./request.route.js";
 import { userRouter } from "./user.route.js";
 import { attendanceRouter } from "./attendance.route.js";
 import { assetRouter } from "./asset.route.js";
-import { LMSRouter } from "./leave.route.js";
+import { userLeaveRouter } from "./leaveRequest.route.js";
+import { managerLeaveRouter } from "./leave.route.js";
 
 
 const Router = express.Router();
@@ -17,7 +18,8 @@ Router.use(userRouter);
 Router.use(attendanceRouter);
 Router.use(assetRouter);
 Router.use(assetRouter);
-Router.use(LMSRouter);
+Router.use(userLeaveRouter);
+Router.use(managerLeaveRouter)
     
 
 

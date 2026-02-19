@@ -38,7 +38,11 @@ const LeaveAuditLog = sequelize.define("LeaveAuditLog", {
 
   reviewedBy: {
     type: DataTypes.UUID,
-    allowNull: false
+    allowNull: true
+  },
+  reviewedAt : {
+    type : DataTypes.DATE,
+    allowNull : true
   },
 
   remarks: {

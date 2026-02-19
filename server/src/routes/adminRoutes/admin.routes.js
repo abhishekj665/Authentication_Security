@@ -7,7 +7,9 @@ import { expenseRouter } from "./expense.route.js";
 import { managerRouter } from "./manager.route.js";
 import { userRouter } from "./user.route.js";
 import { leaveRouter } from "./leave.route.js";
-import { policyRouter } from "./leavePolicy.route.js";
+import { leavePolicyRouter } from "./leavePolicy.route.js";
+import { leaveBalanceRouter } from "./leaveBalance.route.js";
+import { leaveRequestRouter } from "./leaveRequest.route.js";
 
 const Router = express.Router();
 
@@ -19,7 +21,9 @@ Router.use(expenseRouter);
 Router.use(managerRouter);
 Router.use(userRouter);
 Router.use(leaveRouter);
-Router.use(policyRouter);
+Router.use(leaveBalanceRouter);
+Router.use(leavePolicyRouter);
+Router.use(leaveRequestRouter);
 
 
 Router.get("", (req, res) => {

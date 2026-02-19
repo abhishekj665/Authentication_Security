@@ -146,14 +146,17 @@ export default function AttendanceTable() {
   };
 
   const summary = useMemo(() => {
-    const present = rows.filter((r) => r.status === "approved").length;
-    const pending = rows.filter((r) => r.status === "pending").length;
-    const rejected = rows.filter((r) => r.status === "rejected").length;
+    const source =
+      tab === 0 ? rows.filter((r) => r.status !== "pending") : rows;
 
-    const totalWorked = rows.reduce((a, r) => a + r.worked, 0);
-    const totalBreak = rows.reduce((a, r) => a + r.break, 0);
+    const present = source.filter((r) => r.status === "approved").length;
+    const pending = source.filter((r) => r.status === "pending").length;
+    const rejected = source.filter((r) => r.status === "rejected").length;
 
-    const uniqueDays = new Set(rows.map((r) => r.requestDate));
+    const totalWorked = source.reduce((a, r) => a + r.worked, 0);
+    const totalBreak = source.reduce((a, r) => a + r.break, 0);
+
+    const uniqueDays = new Set(source.map((r) => r.requestDate));
 
     return {
       workingDays: uniqueDays.size,
@@ -163,7 +166,7 @@ export default function AttendanceTable() {
       workedHrs: Math.floor(totalWorked / 60),
       breakHrs: Math.floor(totalBreak / 60),
     };
-  }, [visibleRows]);
+  }, [rows, tab]);
 
   const toggleRow = (id) => {
     setSelectedIds((prev) =>

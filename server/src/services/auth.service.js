@@ -96,6 +96,14 @@ export const logInService = async ({ email, password }) => {
     };
   }
 
+  const attendancePolicy = await AttendancePolicy.findOne({
+    where: { isDefault: true },
+  });
+
+  if (attendancePolicy) {
+    user.attendancePolicyId = attendancePolicy.id;
+  }
+
   const token = jwtSign(user.id, user.role);
 
   user.login_At = new Date();
@@ -152,20 +160,12 @@ export const verifyOtpService = async (email, otp, purpose) => {
   user.isVerified = true;
   await user.save();
 
-  const attendancePolicy = await AttendancePolicy.findOne({
-    where: { isDefault: true },
-  });
-
   const leavePolicy = await LeavePolicy.findOne({
     where: { isActive: true },
   });
 
   if (leavePolicy) {
     user.leavePolicyId = leavePolicy.id;
-  }
-
-  if (attendancePolicy) {
-    user.attendancePolicyId = attendancePolicy.id;
   }
 
   if (purpose === "SIGNUP") {

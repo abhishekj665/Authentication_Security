@@ -1,12 +1,12 @@
-import * as leaveBalanceService from "../../services/LMS/leaveBalance.service.js";
+import * as leaveApprovalService from "../../services/admin/leave.service.js";
 import { successResponse, errorResponse } from "../../utils/response.utils.js";
 import STATUS from "../../constants/Status.js";
 
-export const assignLeaveBalance = async (req, res, next) => {
+export const approveLeaveRequest = async (req, res, next) => {
   try {
-    const response = await leaveBalanceService.assignLeaveBalance(
+    const response = await leaveApprovalService.approveLeaveRequest(
       req.params.id,
-      req.body.year,
+      req.user.id,
     );
 
     if (response.success) {
@@ -24,12 +24,12 @@ export const assignLeaveBalance = async (req, res, next) => {
   }
 };
 
-
-export const assignLeaveBalanceBulk = async (req, res, next) => {
+export const rejectLeaveRequest = async (req, res, next) => {
   try {
-    const response = await leaveBalanceService.assignLeaveBalanceBulk(
+    const response = await leaveApprovalService.rejectLeaveRequest(
       req.params.id,
-      req.body.year,
+      req.body.remark,
+      req.user.id,
     );
 
     if (response.success) {

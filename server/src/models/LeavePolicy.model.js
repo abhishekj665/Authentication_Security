@@ -22,6 +22,14 @@ const LeavePolicy = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
+    effectiveFrom : {
+      type : DataTypes.DATEONLY,
+      allowNull : true
+    },
+    effectiveTo : {
+      type : DataTypes.DATEONLY,
+      allowNull : true
+    },
     description: {
       type: DataTypes.TEXT,
       allowNull: true,
@@ -30,16 +38,6 @@ const LeavePolicy = sequelize.define(
       type: DataTypes.BOOLEAN,
       allowNull: false,
       defaultValue: true,
-    },
-    carryForwardAllow: {
-      type: DataTypes.BOOLEAN,
-      allowNull: false,
-      defaultValue: false,
-    },
-    carryForwardLimit: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      defaultValue: 0,
     },
   },
   {

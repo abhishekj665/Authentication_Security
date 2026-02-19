@@ -36,13 +36,7 @@ const LeavePolicyRule = sequelize.define(
     carryForwardLimit: {
       type: DataTypes.DECIMAL(5, 2),
       allowNull: true,
-    },
-
-    accrualPerMonth: {
-      type: DataTypes.DECIMAL(5, 2),
-      allowNull: true,
-      comment: "Optional: monthly accrual instead of full allocation",
-    },
+    }
   },
   {
     tableName: "LeavePolicyRule",

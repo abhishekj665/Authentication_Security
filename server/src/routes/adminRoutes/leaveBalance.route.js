@@ -3,9 +3,13 @@ import * as adminLeaveBalanceController from "../../controllers/admin/leaveBalan
 
 const Router = express.Router();
 
-Router.post(
-  "/lms/leave/leave-balance/assign",
-  adminLeaveBalanceController.assignLeaveBalances,
+Router.put(
+  "/lms/leave/leave-balance/assign/:id",
+  adminLeaveBalanceController.assignLeaveBalance,
 );
+Router.put(
+  "/lms/leave/leave-balance/assign-bulk/:id",
+  adminLeaveBalanceController.assignLeaveBalanceBulk,
+)
 
 export const leaveBalanceRouter = Router;
