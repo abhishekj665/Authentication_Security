@@ -22,13 +22,18 @@ const LeavePolicy = sequelize.define(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    effectiveFrom : {
-      type : DataTypes.DATEONLY,
-      allowNull : true
+    effectiveFrom: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
     },
-    effectiveTo : {
-      type : DataTypes.DATEONLY,
-      allowNull : true
+    effectiveTo: {
+      type: DataTypes.DATEONLY,
+      allowNull: true,
+    },
+    appliesTo: {
+      type: DataTypes.ENUM("user", "manager", "all"),
+      allowNull: false,
+      defaultValue: "user",
     },
     description: {
       type: DataTypes.TEXT,

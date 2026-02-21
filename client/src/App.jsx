@@ -32,6 +32,12 @@ import AttendanceTable from "./pages/AdminPages/AttendanceDataPage";
 import AttendanceData from "./pages/ManagerPages/AttendanceRequestPage";
 import UserAttendanceData from "./pages/UserPages/AttendanceData";
 import ManagerAttendancePage from "./pages/ManagerPages/ManagerAttendancePage";
+import LeaveManagement from "./pages/UserPages/LeaveManagementPage";
+import ManagerLeaveManagement from "./pages/ManagerPages/ManagerLeaveManagement";
+import ManagerLeaveDashboard from "./pages/ManagerPages/ManagerLeaveDashboard";
+import AdminLeaveDashboard from "./pages/AdminPages/AdminLeaveDashboard";
+import AdminLeavePolicyPage from "./pages/AdminPages/LeavePolicyPage";
+import LeaveTypePage from "./pages/AdminPages/LeaveTypePage";
 
 function App() {
   const dispatch = useDispatch();
@@ -49,6 +55,7 @@ function App() {
             <Route path="asset" element={<UserAssetPage />}></Route>
             <Route path="expense" element={<UserExpensePage />}></Route>
             <Route path="attendance" element={<UserAttendanceData />}></Route>
+            <Route path="leave-management" element={<LeaveManagement />} />
           </Route>
 
           <Route path="/admin" element={<AdminLayoutPage />}>
@@ -60,6 +67,9 @@ function App() {
             <Route path="manager" element={<ManagerPage />} />
             <Route path="attendance-policy" element={<AttendancePolicy />} />
             <Route path="attendance" element={<AttendanceTable />} />
+            <Route path="leave-requests" element={<AdminLeaveDashboard />} />
+            <Route path="leave-policy" element={<AdminLeavePolicyPage />} />
+            <Route path="leave-type" element={<LeaveTypePage />} />
           </Route>
 
           <Route path="/manager/dashboard" element={<ManagerLayout />}>
@@ -69,6 +79,11 @@ function App() {
             <Route path="attendance/request" element={<AttendanceData />} />
             <Route path="attendance/me" element={<ManagerAttendancePage />} />
             <Route path="expenses" element={<ManagerExpensesPage />} />
+            <Route path="leave-requests" element={<ManagerLeaveDashboard />} />
+            <Route
+              path="leave/management"
+              element={<ManagerLeaveManagement />}
+            />
           </Route>
 
           <Route path="/" element={<SignUpPage />}></Route>

@@ -9,6 +9,8 @@ Router.use(managerAuth);
 
 Router.patch("/lms/leave/approve/:id", userLeaveRequestController.approveLeaveRequest);
 Router.patch("/lms/leave/reject/:id", userLeaveRequestController.rejectLeaveRequest);
+Router.get("/lms/leave/requests", userLeaveRequestController.getLeaveRequests);
+
 
 
 

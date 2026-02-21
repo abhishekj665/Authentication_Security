@@ -11,6 +11,7 @@ import ExpressError from "../../utils/Error.utils.js";
 import STATUS from "../../constants/Status.js";
 import { sequelize } from "../../config/db.js";
 import { calculateLeaveDays } from "../../utils/calulateLeaveDays.utils.js";
+import { Op } from "sequelize";
 
 export const registerLeaveRequest = async (data, userId) => {
   const transaction = await sequelize.transaction();
@@ -31,18 +32,14 @@ export const registerLeaveRequest = async (data, userId) => {
         {
           model: LeavePolicy,
           as: "leavePolicy",
-          required: true,
           include: [
             {
               model: LeavePolicyRule,
               as: "rules",
-              required: true,
-              where: { leaveTypeId },
               include: [
                 {
                   model: LeaveType,
                   as: "leaveType",
-                  required: true,
                   attributes: ["isActive"],
                 },
               ],
@@ -52,13 +49,34 @@ export const registerLeaveRequest = async (data, userId) => {
         {
           model: LeaveBalance,
           as: "leaveBalances",
-          required: true,
-          where: {
-            leaveTypeId,
-          },
+          where: { leaveTypeId },
         },
       ],
     });
+
+    if (!user || !user.leavePolicy)
+      throw new ExpressError(STATUS.BAD_REQUEST, "No policy found");
+
+    const policy = user.leavePolicy;
+
+    if (!policy.isActive) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Assigned leave policy is inactive",
+      );
+    }
+
+    const requestStart = new Date(data.startDate);
+    const requestEnd = new Date(data.endDate);
+    const effectiveFrom = new Date(policy.effectiveFrom);
+    const effectiveTo = new Date(policy.effectiveTo);
+
+    if (requestStart < effectiveFrom || requestEnd > effectiveTo) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        `Leave request must be within policy effective period (${policy.effectiveFrom} - ${policy.effectiveTo})`,
+      );
+    }
 
     if (
       !user.leavePolicy.isActive ||
@@ -69,6 +87,28 @@ export const registerLeaveRequest = async (data, userId) => {
 
     if (user.leaveBalances?.[0]?.balance < data.daysRequested)
       throw new ExpressError(STATUS.BAD_REQUEST, "Insufficient leave balance");
+
+    const overlappingLeave = await LeaveRequest.findOne({
+      where: {
+        userId,
+        status: {
+          [Op.in]: ["PENDING", "APPROVED"],
+        },
+        startDate: {
+          [Op.lte]: data.endDate,
+        },
+        endDate: {
+          [Op.gte]: data.startDate,
+        },
+      },
+    });
+
+    if (overlappingLeave) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "You already have a leave request for the selected date range",
+      );
+    }
 
     const leaveData = await LeaveRequest.create(
       {
@@ -143,6 +183,36 @@ export const extendLeaveRequest = async (id, data, userId) => {
         message: "You can extend you request",
       };
     }
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+export const getLeaveRequest = async (useId) => {
+  try {
+    const leaveData = await LeaveRequest.findAll({
+      where: { userId: useId },
+      order: [["createdAt", "DESC"]],
+      include: [
+        {
+          model: LeaveType,
+          attributes: ["name", "code", "id"],
+          required: true,
+        },
+      ],
+    });
+
+    if (!leaveData)
+      return {
+        success: false,
+        message: "No Leave Data Found",
+      };
+
+    return {
+      success: true,
+      data: leaveData,
+      message: "Leave Data Found",
+    };
   } catch (error) {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }

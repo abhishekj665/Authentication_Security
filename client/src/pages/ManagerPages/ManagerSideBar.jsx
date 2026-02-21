@@ -4,6 +4,7 @@ import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import RequestPageIcon from '@mui/icons-material/RequestPage';
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import { useSelector } from "react-redux";
 
 export default function ManagerSidebar({ open, setOpen }) {
@@ -75,6 +76,22 @@ export default function ManagerSidebar({ open, setOpen }) {
         >
           <AccessTimeIcon /> Attendance
         </NavLink>
+        <NavLink
+          to="/manager/dashboard/leave/management"
+          onClick={() => setOpen(false)}
+          className={linkClass}
+        >
+          <CalendarMonthIcon/> Leave Management
+        </NavLink>
+        <NavLink
+          to="/manager/dashboard/leave-requests"
+          onClick={() => setOpen(false)}
+          className={linkClass}
+        >
+          <CalendarMonthIcon/> Leave Requests
+        </NavLink>
+
+        
       </nav>
     </aside>
   );

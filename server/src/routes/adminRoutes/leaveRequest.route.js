@@ -3,12 +3,8 @@ import * as leaveRequestController from "../../controllers/admin/leaveRequest.co
 
 const Router = express.Router();
 
-
-
-
-Router.patch("/lms/leave/approve/:id", leaveRequestController.approveLeaveRequest);
-Router.patch("/lms/leave/reject/:id", leaveRequestController.rejectLeaveRequest);
-
-
+Router.patch("/leave/approve/:id", leaveRequestController.approveLeaveRequest);
+Router.patch("/leave/reject/:id", leaveRequestController.rejectLeaveRequest);
+Router.get("/leave/requests", leaveRequestController.getLeaveRequests);
 
 export const leaveRequestRouter = Router;

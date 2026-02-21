@@ -5,6 +5,7 @@ import { toast } from "react-toastify";
 import PendingActionsRoundedIcon from "@mui/icons-material/PendingActionsRounded";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 
 export default function UserSidebar({ open, setOpen }) {
   const { user } = useSelector((state) => state.auth);
@@ -59,6 +60,13 @@ export default function UserSidebar({ open, setOpen }) {
           className={linkClass}
         >
           <AccessTimeIcon /> Attendance
+        </NavLink>
+        <NavLink
+          to="/home/leave-management"
+          onClick={() => setOpen(false)}
+          className={linkClass}
+        >
+          <CalendarMonthIcon/> Leave Management
         </NavLink>
       </nav>
     </aside>

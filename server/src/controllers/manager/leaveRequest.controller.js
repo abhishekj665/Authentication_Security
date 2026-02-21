@@ -1,39 +1,67 @@
-import * as leaveService from "../../services/LMS/leave.service.js";
-import * as leaveApprovalService from "../../services/manager/leave.service.js";
-import {successResponse, errorResponse} from "../../utils/response.utils.js";
+
+import * as leaveApprovalService from "../../services/manager/leaveRequest.service.js";
+import { successResponse, errorResponse } from "../../utils/response.utils.js";
 import STATUS from "../../constants/Status.js";
 
-
-
 export const approveLeaveRequest = async (req, res, next) => {
-try{
-    const response = await leaveApprovalService.approveLeaveRequest(req.params.id,req.user.id);
+  try {
+    const response = await leaveApprovalService.approveLeaveRequest(
+      req.params.id,
+      req.user.id,
+    );
 
-    if(response.success){
-        return successResponse(res, response.data, response.message, STATUS.ACCEPTED);
-    }else{
-        return errorResponse(res, response.message, STATUS.BAD_REQUEST)
+    if (response.success) {
+      return successResponse(
+        res,
+        response.data,
+        response.message,
+        STATUS.ACCEPTED,
+      );
+    } else {
+      return errorResponse(res, response.message, STATUS.BAD_REQUEST);
     }
-
-    
-}catch(error){
+  } catch (error) {
     next(error);
-}
-}
-
+  }
+};
 
 export const rejectLeaveRequest = async (req, res, next) => {
-try{
-    const response = await leaveApprovalService.rejectLeaveRequest(req.params.id,req.body.remark,req.user.id);
+  try {
+    const response = await leaveApprovalService.rejectLeaveRequest(
+      req.params.id,
+      req.body.remark,
+      req.user.id,
+    );
 
-    if(response.success){
-        return successResponse(res, response.data, response.message, STATUS.ACCEPTED);
-    }else{
-        return errorResponse(res, response.message, STATUS.BAD_REQUEST)
+    if (response.success) {
+      return successResponse(
+        res,
+        response.data,
+        response.message,
+        STATUS.ACCEPTED,
+      );
+    } else {
+      return errorResponse(res, response.message, STATUS.BAD_REQUEST);
     }
-
-    
-}catch(error){
+  } catch (error) {
     next(error);
-}
-}
+  }
+};
+
+export const getLeaveRequests = async (req, res, next) => {
+  try {
+    
+    const response = await leaveApprovalService.getLeaveRequests(
+      req.query,
+      req.user.id,
+    );
+
+    if (response.success) {
+      return successResponse(res, response.data, response.message, STATUS.OK);
+    } else {
+      return errorResponse(res, response.message, STATUS.BAD_REQUEST);
+    }
+  } catch (error) {
+    next(error);
+  }
+};

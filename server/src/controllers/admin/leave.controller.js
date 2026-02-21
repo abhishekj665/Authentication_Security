@@ -1,5 +1,5 @@
 import { successResponse, errorResponse } from "../../utils/response.utils.js";
-import * as leaveTypeService from "../../services/LMS/leaveType.service.js";
+import * as leaveTypeService from "../../services/lms/leaveType.service.js";
 import STATUS from "../../constants/Status.js";
 
 export const registerLeaveType = async (req, res, next) => {
@@ -15,6 +15,3 @@ export const registerLeaveType = async (req, res, next) => {
     next(error);
   }
 };
-
-
-

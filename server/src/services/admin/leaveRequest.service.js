@@ -9,7 +9,7 @@ import {
 } from "../../models/Associations.model.js";
 import { sequelize } from "../../config/db.js";
 
-export const approveLeaveRequest = async (id, managerId) => {
+export const approveLeaveRequest = async (id, adminId) => {
   const transaction = await sequelize.transaction();
 
   try {
@@ -19,7 +19,7 @@ export const approveLeaveRequest = async (id, managerId) => {
         { model: LeaveAuditLog, as: "auditLogs", required: false },
         {
           model: User,
-          where: { role: "user", managerId: managerId },
+          where: { role: "manager" },
           as: "employee",
           required: true,
           include: [
@@ -35,6 +35,8 @@ export const approveLeaveRequest = async (id, managerId) => {
 
     if (!leaveData)
       throw new ExpressError(STATUS.BAD_REQUEST, "Leave Request Not Found");
+
+    console.log(leaveData.status);
 
     if (leaveData.status !== "PENDING" || leaveData.cancelRequest) {
       return {
@@ -59,7 +61,12 @@ export const approveLeaveRequest = async (id, managerId) => {
     );
 
     await leaveData.update(
-      { status: "APPROVED", reviewedBy: managerId, reviewedAt: new Date(), remark : "Approved By Manager"},
+      {
+        status: "APPROVED",
+        reviewedBy: adminId,
+        reviewedAt: new Date(),
+        remark: "Approved By Admin",
+      },
       { transaction },
     );
 
@@ -69,7 +76,7 @@ export const approveLeaveRequest = async (id, managerId) => {
         newStatus: "APPROVED",
         action: "APPROVED",
         reviewedAt: new Date(),
-        reviewedBy: managerId,
+        reviewedBy: adminId,
       },
       { transaction },
     );
@@ -88,16 +95,17 @@ export const approveLeaveRequest = async (id, managerId) => {
   }
 };
 
-export const rejectLeaveRequest = async (id,remark,  managerId) => {
-  const transaction = await sequelize.transaction();
+export const rejectLeaveRequest = async (id, remark, adminId) => {
   try {
+    const transaction = await sequelize.transaction();
+
     const leaveData = await LeaveRequest.findOne({
       where: { id },
       include: [
-        { model: LeaveAuditLog, as: "auditLogs", required: true },
+        { model: LeaveAuditLog, as: "auditLogs", required: false },
         {
           model: User,
-          where: { role: "user", managerId: managerId },
+          where: { role: "manager" },
           as: "employee",
           required: true,
         },
@@ -117,10 +125,10 @@ export const rejectLeaveRequest = async (id,remark,  managerId) => {
     await leaveData.update(
       {
         status: "REJECTED",
-        reviewedBy: managerId,
+        reviewedBy: adminId,
         reviewedAt: new Date(),
-        reviewedBy: managerId,
-        remark : remark
+        reviewedBy: adminId,
+        remark: remark,
       },
       { transaction },
     );
@@ -131,7 +139,7 @@ export const rejectLeaveRequest = async (id,remark,  managerId) => {
         newStatus: "REJECTED",
         action: "REJECTED",
         reviewedAt: new Date(),
-        reviewedBy: managerId,
+        reviewedBy: adminId,
       },
       { transaction },
     );
@@ -147,6 +155,58 @@ export const rejectLeaveRequest = async (id,remark,  managerId) => {
     };
   } catch (error) {
     await transaction.rollback();
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+export const getLeaveRequests = async (
+  { status = "PENDING", page = 1, limit = 10 },
+  adminId,
+) => {
+  try {
+    const offset = (page - 1) * limit;
+
+    const whereClause = {};
+
+    if (!status || status === "PENDING") {
+      whereClause.status = "PENDING";
+    } else if (status === "all") {
+      whereClause.status = ["APPROVED", "REJECTED"];
+    } else {
+      whereClause.status = status.toUpperCase();
+    }
+
+    const { rows, count } = await LeaveRequest.findAndCountAll({
+      where: whereClause,
+      include: [
+        {
+          model: User,
+          where: { role: "manager" },
+          as: "employee",
+          required: true,
+          attributes: ["id", "first_name", "email"],
+        },
+        {
+          model: LeaveType,
+          as: "LeaveType",
+          attributes: ["id", "name", "code"],
+          required: true,
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+      offset,
+      limit: Number(limit),
+    });
+
+    return {
+      success: true,
+      data: rows,
+      total: count,
+      currentPage: Number(page),
+      totalPages: Math.ceil(count / limit),
+      message: "Leave Requests Fetched Successfully",
+    };
+  } catch (error) {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };

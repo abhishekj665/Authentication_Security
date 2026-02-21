@@ -6,7 +6,14 @@ const Router = express.Router();
 
 Router.use(managerAuth);
 
-
-Router.post("/lms/leave/apply", managerLeaveRequestController.registerLeaveRequest);
+Router.post(
+  "/lms/leave/apply",
+  managerLeaveRequestController.registerLeaveRequest,
+);
+Router.get(
+  "/lms/leave/leave-balance",
+  managerLeaveRequestController.getLeaveBalance,
+);
+Router.get("/lms/leave/me", managerLeaveRequestController.getLeaveRequests);
 
 export const managerLeaveRouter = Router;

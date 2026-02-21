@@ -1,6 +1,7 @@
 import {
   LeavePolicy,
   LeavePolicyRule,
+  LeaveType,
 } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 import STATUS from "../../constants/Status.js";
@@ -8,7 +9,7 @@ import { sequelize } from "../../config/db.js";
 import {
   assignLeaveBalance,
   assignLeaveBalanceBulk,
-} from "./leaveBalance.service.js";
+} from "../lms/leaveBalance.service.js";
 import { User } from "../../models/Associations.model.js";
 
 export const registerLeavePolicy = async (data, adminId) => {
@@ -17,6 +18,8 @@ export const registerLeavePolicy = async (data, adminId) => {
   try {
     const { rules, ...policyData } = data;
 
+    
+
     const policy = await LeavePolicy.create(
       {
         ...policyData,
@@ -24,6 +27,8 @@ export const registerLeavePolicy = async (data, adminId) => {
       },
       { transaction: t },
     );
+
+    console.log("Saved policy:", policy.toJSON());
 
     for (const r of rules) {
       await LeavePolicyRule.create(
@@ -35,6 +40,11 @@ export const registerLeavePolicy = async (data, adminId) => {
       );
     }
 
+    console.log(policy.appliesTo);
+
+
+    await assignPolicyBulk(policy.id, policy.appliesTo, policy.year, t);
+
     await t.commit();
 
     return {
@@ -44,6 +54,7 @@ export const registerLeavePolicy = async (data, adminId) => {
     };
   } catch (error) {
     await t.rollback();
+
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };
@@ -51,12 +62,14 @@ export const registerLeavePolicy = async (data, adminId) => {
 export const updateLeavePolicy = async (id, data, adminId) => {
   const t = await sequelize.transaction();
 
+  console.log(data);
+
   try {
-    const { policyRule = [], ...policyData } = data;
+    const { rules = [], ...policyData } = data;
 
     const policy = await LeavePolicy.findOne({
       where: { id, createdBy: adminId },
-      transaction: t
+      transaction: t,
     });
 
     if (!policy) {
@@ -68,7 +81,7 @@ export const updateLeavePolicy = async (id, data, adminId) => {
       await policy.update(policyData, { transaction: t });
     }
 
-    for (const rule of policyRule) {
+    for (const rule of rules) {
       await LeavePolicyRule.upsert(
         {
           policyId: id,
@@ -77,22 +90,20 @@ export const updateLeavePolicy = async (id, data, adminId) => {
           carryForwardAllowed: rule.carryForwardAllowed,
           carryForwardLimit: rule.carryForwardLimit,
         },
-        { transaction: t }
+        { transaction: t },
       );
     }
 
+    await assignPolicyBulk(id, policy.appliesTo, policy.year, t);
+
     await t.commit();
 
-    await assignLeaveBalanceBulk(id, policy.year);
-
     return { success: true, message: "Policy Updated Successfully" };
-
   } catch (error) {
     await t.rollback();
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };
-
 
 export const deleteLeavePolicy = async (id) => {
   try {
@@ -110,7 +121,15 @@ export const deleteLeavePolicy = async (id) => {
 
 export const getLeavePolicies = async () => {
   try {
-    const policies = await LeavePolicy.findAll();
+    const policies = await LeavePolicy.findAll({
+      include: [
+        {
+          model: LeavePolicyRule,
+          as: "rules",
+          include: [{ model: LeaveType, as: "leaveType" }],
+        },
+      ],
+    });
 
     return {
       success: true,
@@ -146,14 +165,18 @@ export const assignPolicyToUser = async (userId, policyId, year) => {
   }
 };
 
-export const assignPolicyBulk = async (policyId, filter, year) => {
-  const transaction = await sequelize.transaction();
+export const assignPolicyBulk = async (policyId, filter, year, transaction) => {
+  if (filter === "all") filter = {};
+  if (filter == "user") filter = { role: "user" };
+  if (filter == "manager") filter = { role: "manager" };
 
   try {
     const [affectedRows] = await User.update(
       { leavePolicyId: policyId },
       {
-        where: filter,
+        where: {
+          ...filter,
+        },
         transaction,
       },
     );
@@ -161,9 +184,7 @@ export const assignPolicyBulk = async (policyId, filter, year) => {
     if (!affectedRows)
       throw new ExpressError(STATUS.NOT_FOUND, "No users matched the filter");
 
-    await transaction.commit();
-
-    await assignLeaveBalanceBulk(policyId, year);
+    await assignLeaveBalanceBulk(policyId, year, transaction);
 
     return {
       success: true,
@@ -171,7 +192,6 @@ export const assignPolicyBulk = async (policyId, filter, year) => {
       affectedUsers: affectedRows,
     };
   } catch (error) {
-    await transaction.rollback();
     throw error;
   }
 };

@@ -1,4 +1,4 @@
-import * as leaveApprovalService from "../../services/admin/leave.service.js";
+import * as leaveApprovalService from "../../services/admin/leaveRequest.service.js";
 import { successResponse, errorResponse } from "../../utils/response.utils.js";
 import STATUS from "../../constants/Status.js";
 
@@ -39,6 +39,24 @@ export const rejectLeaveRequest = async (req, res, next) => {
         response.message,
         STATUS.ACCEPTED,
       );
+    } else {
+      return errorResponse(res, response.message, STATUS.BAD_REQUEST);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getLeaveRequests = async (req, res, next) => {
+  try {
+    
+    const response = await leaveApprovalService.getLeaveRequests(
+      req.query,
+      req.user.id,
+    );
+
+    if (response.success) {
+      return successResponse(res, response.data, response.message, STATUS.OK);
     } else {
       return errorResponse(res, response.message, STATUS.BAD_REQUEST);
     }

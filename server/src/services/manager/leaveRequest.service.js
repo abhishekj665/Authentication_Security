@@ -9,7 +9,7 @@ import {
 } from "../../models/Associations.model.js";
 import { sequelize } from "../../config/db.js";
 
-export const approveLeaveRequest = async (id, adminId) => {
+export const approveLeaveRequest = async (id, managerId) => {
   const transaction = await sequelize.transaction();
 
   try {
@@ -19,7 +19,7 @@ export const approveLeaveRequest = async (id, adminId) => {
         { model: LeaveAuditLog, as: "auditLogs", required: false },
         {
           model: User,
-          where: { role: "manager" },
+          where: { role: "user", managerId: managerId },
           as: "employee",
           required: true,
           include: [
@@ -35,8 +35,6 @@ export const approveLeaveRequest = async (id, adminId) => {
 
     if (!leaveData)
       throw new ExpressError(STATUS.BAD_REQUEST, "Leave Request Not Found");
-
-    console.log(leaveData.status);
 
     if (leaveData.status !== "PENDING" || leaveData.cancelRequest) {
       return {
@@ -61,7 +59,12 @@ export const approveLeaveRequest = async (id, adminId) => {
     );
 
     await leaveData.update(
-      { status: "APPROVED", reviewedBy: adminId, reviewedAt: new Date(), remark : "Approved By Admin" },
+      {
+        status: "APPROVED",
+        reviewedBy: managerId,
+        reviewedAt: new Date(),
+        remark: "Approved By Manager",
+      },
       { transaction },
     );
 
@@ -71,7 +74,7 @@ export const approveLeaveRequest = async (id, adminId) => {
         newStatus: "APPROVED",
         action: "APPROVED",
         reviewedAt: new Date(),
-        reviewedBy: adminId,
+        reviewedBy: managerId,
       },
       { transaction },
     );
@@ -90,27 +93,26 @@ export const approveLeaveRequest = async (id, adminId) => {
   }
 };
 
-
-export const rejectLeaveRequest = async (id,remark, adminId) => {
+export const rejectLeaveRequest = async (id, remark, managerId) => {
+  const transaction = await sequelize.transaction();
   try {
-    const transaction = await sequelize.transaction();
-
     const leaveData = await LeaveRequest.findOne({
       where: { id },
       include: [
-        { model: LeaveAuditLog, as: "auditLogs", required: false },
+        { model: LeaveAuditLog, as: "auditLogs", required: true },
         {
           model: User,
-          where: { role: "manager"},
+          where: { role: "user", managerId: managerId },
           as: "employee",
           required: true,
         },
       ],
     });
 
-    if(!leaveData) throw new ExpressError(STATUS.BAD_REQUEST, "Leave Request Not Found");
+    if (!leaveData)
+      throw new ExpressError(STATUS.BAD_REQUEST, "Leave Request Not Found");
 
-    if (leaveData.status !== "PENDING" || leaveData.cancelRequest ) {
+    if (leaveData.status !== "PENDING" || leaveData.cancelRequest) {
       return {
         success: false,
         message: "You can't reject this request, the action is already done",
@@ -118,7 +120,13 @@ export const rejectLeaveRequest = async (id,remark, adminId) => {
     }
 
     await leaveData.update(
-      { status: "REJECTED", reviewedBy: adminId, reviewedAt: new Date(), reviewedBy : adminId, remark : remark},
+      {
+        status: "REJECTED",
+        reviewedBy: managerId,
+        reviewedAt: new Date(),
+        reviewedBy: managerId,
+        remark: remark,
+      },
       { transaction },
     );
 
@@ -128,7 +136,7 @@ export const rejectLeaveRequest = async (id,remark, adminId) => {
         newStatus: "REJECTED",
         action: "REJECTED",
         reviewedAt: new Date(),
-        reviewedBy: adminId,
+        reviewedBy: managerId,
       },
       { transaction },
     );
@@ -147,3 +155,58 @@ export const rejectLeaveRequest = async (id,remark, adminId) => {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };
+
+export const getLeaveRequests = async (
+  { status = "PENDING", page = 1, limit = 10 },
+  managerId,
+) => {
+  try {
+    const offset = (page - 1) * limit;
+
+    const whereClause = {};
+
+    if (!status || status === "PENDING") {
+      whereClause.status = "PENDING";
+    } else if (status === "all") {
+      whereClause.status = ["APPROVED", "REJECTED"];
+    } else {
+      whereClause.status = status.toUpperCase();
+    }
+
+    const { rows, count } = await LeaveRequest.findAndCountAll({
+      where: whereClause,
+      include: [
+        {
+          model: User,
+          where: { role: "user", managerId },
+          as: "employee",
+          required: true,
+          attributes: ["id", "first_name", "email"],
+        },
+        {
+          model: LeaveType,
+          as: "LeaveType",
+          attributes: ["id", "name", "code"],
+          required: true,
+        },
+      ],
+      order: [["createdAt", "DESC"]],
+      offset,
+      limit: Number(limit),
+    });
+
+    return {
+      success: true,
+      data: rows,
+      total: count,
+      currentPage: Number(page),
+      totalPages: Math.ceil(count / limit),
+      message: "Leave Requests Fetched Successfully",
+    };
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+
+

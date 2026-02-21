@@ -7,6 +7,7 @@ import AccessibilityIcon from "@mui/icons-material/Accessibility";
 import LocalMallIcon from "@mui/icons-material/LocalMall";
 import ManageHistoryIcon from "@mui/icons-material/ManageHistory";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
+import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
 import { useSelector } from "react-redux";
 
 export default function Sidebar({ open, setOpen }) {
@@ -94,6 +95,30 @@ export default function Sidebar({ open, setOpen }) {
           className={linkClass}
         >
           <AccessTimeIcon /> Attendance Data
+        </NavLink>
+
+        <NavLink
+          to="/admin/leave-type"
+          onClick={() => setOpen(false)}
+          className={linkClass}
+        >
+          <CalendarMonthIcon /> Leaves Data
+        </NavLink>
+
+        <NavLink
+          to="/admin/leave-policy"
+          onClick={() => setOpen(false)}
+          className={linkClass}
+        >
+          <CalendarMonthIcon /> Leave Policy
+        </NavLink>
+
+        <NavLink
+          to="/admin/leave-requests"
+          onClick={() => setOpen(false)}
+          className={linkClass}
+        >
+          <CalendarMonthIcon /> Leave Requests
         </NavLink>
       </nav>
     </aside>

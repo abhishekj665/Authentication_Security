@@ -52,3 +52,25 @@ export const deleteLeaveType = async (id) => {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
   }
 };
+
+export const getLeaveTypes = async () => {
+  try {
+    
+    const leaveData = await LeaveType.findAll();
+
+    if (!leaveData) {
+      return {
+        success: false,
+        messsage: "No Leave Types Found",
+      };
+    }
+
+    return {
+      success: true,
+      data: leaveData,
+      messsage: "Leave Types Fetched Successfully",
+    };
+  } catch (error) {
+    throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};

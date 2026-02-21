@@ -82,3 +82,40 @@ export const getAllAttendanceData = async (filters = {}) => {
     };
   }
 };
+
+export const getLeaveRequests = async () => {
+  try {
+    const res = await API.get(`/users/lms/leave/requests`);
+    return res.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
+};
+
+export const getLeaveBalance = async () => {
+  try {
+    const res = await API.get(`/users/lms/leave/leave-balance`);
+    return res.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
+};
+
+export const registerLeaveRequest = async (data) => {
+  try {
+    console.log(data);
+    const res = await API.post("/users/lms/leave/apply", data);
+    return res.data;
+  } catch (error) {
+    return {
+      success: false,
+      message: error.response?.data?.message || error.message,
+    };
+  }
+};

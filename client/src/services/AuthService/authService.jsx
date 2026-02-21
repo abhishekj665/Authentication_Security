@@ -19,9 +19,8 @@ API.interceptors.response.use(
   (err) => {
     loadingRef.set(false);
     return Promise.reject(err);
-  }
+  },
 );
-
 
 export const login = async (userData) => {
   const response = await API.post("/auth/login", userData);
