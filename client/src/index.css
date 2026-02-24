@@ -31,3 +31,40 @@
     opacity: 1;
   }
 }
+
+.attendance-approved {
+  background: #dcfce7 !important;
+  color: #166534 !important;
+  border-radius: 6px;
+}
+
+.attendance-pending {
+  background: #fef9c3 !important;
+  color: #854d0e !important;
+  border-radius: 6px;
+}
+
+.attendance-rejected {
+  background: #fee2e2 !important;
+  color: #991b1b !important;
+  border-radius: 6px;
+}
+
+.react-calendar {
+  border: none !important;
+  width: 100%;
+}
+
+.small-calendar {
+  width: 100% !important;
+  border: none !important;
+  font-size: 12px;
+}
+
+.small-calendar .react-calendar__tile {
+  padding: 5px 0 !important;
+}
+
+.small-calendar .react-calendar__navigation button {
+  font-size: 13px;
+}

@@ -114,6 +114,13 @@ const ManagerLeaveManagement = () => {
       if (response.success) {
         setOpen(false);
         getRequests();
+        setFormData({
+          leaveTypeId: "",
+          startDate: "",
+          endDate: "",
+          isHalfDay: false,
+          reason: "",
+        });
         toast.success(response.message);
       } else {
         console.log(response);

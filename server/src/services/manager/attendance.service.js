@@ -10,6 +10,7 @@ import {
   attendanceRejectedMailTemplate,
 } from "../../utils/attendanceMail.utils.js";
 import { sendMail } from "../../config/otpService.js";
+import { sequelize } from "../../config/db.js";
 
 export const getAllAttendance = async (filters = {}, managerId) => {
   try {
@@ -128,11 +129,13 @@ export const getAttendance = async (filters = {}, managerId) => {
 };
 
 export const approveAttendanceRequest = async (managerId, id) => {
+  const transaction = await sequelize.transaction();
+
   try {
     const attendanceData = await AttendanceRequest.findOne({
       where: { id: id, status: "PENDING" },
       include: [
-        { model: Attendance, attributes: ["punchOutAt", "punchInAt"] },
+        { model: Attendance },
         { model: User, as: "requester", attributes: ["email", "role"] },
       ],
     });
@@ -140,6 +143,8 @@ export const approveAttendanceRequest = async (managerId, id) => {
     if (!attendanceData) {
       throw new ExpressError(STATUS.BAD_REQUEST, "Data Not Found");
     }
+
+    const attendance = attendanceData.Attendance;
 
     if (
       !attendanceData.Attendance.punchOutAt ||
@@ -151,11 +156,18 @@ export const approveAttendanceRequest = async (managerId, id) => {
       );
     }
 
+    attendance.status = "APPROVED";
+    attendance.approvedBy = managerId;
+    attendance.approvedAt = new Date();
+    await attendance.save({ transaction });
+
     attendanceData.status = "APPROVED";
     attendanceData.reviewedBy = managerId;
     attendanceData.reviewedAt = new Date();
 
-    await attendanceData.save();
+    await attendanceData.save({ transaction });
+
+    await transaction.commit();
 
     const manager = await User.findByPk(managerId, {
       attributes: ["email"],
@@ -183,8 +195,9 @@ export const approveAttendanceRequest = async (managerId, id) => {
 };
 
 export const rejectAttendanceRequest = async (managerId, id, data) => {
+  const transaction = await sequelize.transaction();
+
   try {
-    
     const attendanceData = await AttendanceRequest.findOne({
       where: { id: id, status: "PENDING" },
       include: [
@@ -197,6 +210,8 @@ export const rejectAttendanceRequest = async (managerId, id, data) => {
       throw new ExpressError(STATUS.BAD_REQUEST, "No Data Found");
     }
 
+    const attendance = attendanceData.Attendance;
+
     if (
       !attendanceData.Attendance.punchOutAt ||
       !attendanceData.Attendance.punchInAt
@@ -207,12 +222,19 @@ export const rejectAttendanceRequest = async (managerId, id, data) => {
       );
     }
 
+    attendance.status = "APPROVED";
+    attendance.approvedBy = managerId;
+    attendance.approvedAt = new Date();
+    await attendance.save({ transaction });
+
     attendanceData.reviewedBy = managerId;
     attendanceData.reviewedAt = new Date();
     attendanceData.status = "REJECTED";
     attendanceData.remark = data.remark;
 
-    await attendanceData.save();
+    await attendanceData.save({ transaction });
+
+    await transaction.commit();
 
     const manager = await User.findByPk(managerId, {
       attributes: ["email"],
@@ -336,10 +358,25 @@ export const bulkAttendanceRequestApprove = async ({ ids }, managerId) => {
       );
     }
 
+    const attendanceIds = requests.map((r) => r.Attendance.id);
+
+    await Attendance.update(
+      {
+        status: "APPROVED",
+        approvedBy: managerId,
+        approvedAt: new Date(),
+      },
+      {
+        where: { id: attendanceIds },
+      },
+    );
+
+    // ✅ Update AttendanceRequest table
     await AttendanceRequest.update(
       {
         status: "APPROVED",
         reviewedBy: managerId,
+        reviewedAt: new Date(),
       },
       {
         where: { id: ids, status: "PENDING" },

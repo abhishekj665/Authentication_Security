@@ -46,9 +46,30 @@ const Attendance = sequelize.define(
       type: DataTypes.BOOLEAN,
       defaultValue: false,
     },
+    isFullDay : {
+      type : DataTypes.BOOLEAN,
+      defaultValue : false
+    },
     lastInAt: {
       type: DataTypes.DATE,
       allowNull: true,
+    },
+    date: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+    },
+
+    status: {
+      type: DataTypes.ENUM("PENDING", "APPROVED", "REJECTED"),
+      defaultValue: "PENDING",
+    },
+
+    approvedBy: {
+      type: DataTypes.UUID,
+    },
+
+    approvedAt: {
+      type: DataTypes.DATE,
     },
   },
   {

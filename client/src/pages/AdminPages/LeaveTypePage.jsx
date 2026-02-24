@@ -26,7 +26,7 @@ import {
 import axios from "axios";
 
 import { getLeaveTypes } from "../../services/LMS/lmsService";
-import { registerLeaveType } from "../../services/AdminService/leaveService";
+import { registerLeaveType } from "../../services/LMS/lmsService";
 import { toast } from "react-toastify";
 
 const LeaveTypePage = () => {

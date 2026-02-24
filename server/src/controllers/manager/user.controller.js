@@ -4,7 +4,10 @@ import * as userServices from "../../services/manager/user.service.js";
 
 export const registerUser = async (req, res, next) => {
   try {
-    let response = await userServices.registerUserService(req.body);
+    let response = await userServices.registerUserService(
+      req.body,
+      req.user.id,
+    );
 
     if (response.success) {
       return successResponse(res, response.data, response.message);
@@ -32,4 +35,3 @@ export const getUsers = async (req, res, next) => {
     next(error);
   }
 };
-

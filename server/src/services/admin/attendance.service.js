@@ -5,12 +5,12 @@ import {
   User,
 } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
-import { successResponse } from "../../utils/response.utils.js";
 import {
   attendanceApprovedMailTemplate,
   attendanceRejectedMailTemplate,
 } from "../../utils/attendanceMail.utils.js";
 import { sendMail } from "../../config/otpService.js";
+import { sequelize } from "../../config/db.js";
 
 export const getAttendance = async (filters = {}) => {
   try {
@@ -75,6 +75,8 @@ export const getAttendance = async (filters = {}) => {
 };
 
 export const approveAttendanceRequest = async (adminId, id) => {
+  const transaction = await sequelize.transaction();
+
   try {
     const attendanceData = await AttendanceRequest.findOne({
       where: {
@@ -83,7 +85,7 @@ export const approveAttendanceRequest = async (adminId, id) => {
         requestedTo: adminId,
       },
       include: [
-        { model: Attendance, attributes: ["punchOutAt", "punchInAt"] },
+        { model: Attendance },
         {
           model: User,
           as: "requester",
@@ -97,7 +99,7 @@ export const approveAttendanceRequest = async (adminId, id) => {
       throw new ExpressError(STATUS.BAD_REQUEST, "Data Not Found");
     }
 
-    console.log(attendanceData);
+    const attendance = attendanceData.Attendance;
 
     if (attendanceData.Attendance.punchOutAt == null) {
       throw new ExpressError(
@@ -106,11 +108,18 @@ export const approveAttendanceRequest = async (adminId, id) => {
       );
     }
 
+    attendance.status = "APPROVED";
+    attendance.approvedBy = adminId;
+    attendance.approvedAt = new Date();
+    await attendance.save({ transaction });
+
     attendanceData.status = "APPROVED";
     attendanceData.reviewedBy = adminId;
     attendanceData.reviewedAt = new Date();
 
-    await attendanceData.save();
+    await attendanceData.save({ transaction });
+
+    await transaction.commit();
 
     const admin = await User.findByPk(adminId, {
       attributes: ["email"],
@@ -203,6 +212,8 @@ export const rejectAttendanceRequest = async (adminId, id, data) => {
 };
 
 export const bulkAttendanceRequestApprove = async ({ ids }, adminId) => {
+  const transaction = await sequelize.transaction();
+
   try {
     if (!Array.isArray(ids) || ids.length === 0) {
       throw new ExpressError(
@@ -245,7 +256,24 @@ export const bulkAttendanceRequestApprove = async ({ ids }, adminId) => {
       {
         where: { id: ids, status: "PENDING" },
       },
+      { transaction },
     );
+
+    const attendanceIds = requests.map((r) => r.Attendance.id);
+
+    await Attendance.update(
+      {
+        status: "APPROVED",
+        approvedBy: adminId,
+        approvedAt: new Date(),
+      },
+      {
+        where: { id: attendanceIds },
+      },
+      { transaction },
+    );
+
+    await transaction.commit();
 
     return {
       success: true,

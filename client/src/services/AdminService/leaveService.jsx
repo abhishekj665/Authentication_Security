@@ -42,19 +42,6 @@ export const rejectLeaveRequest = async (id, remark) => {
 
 
 
-export const registerLeaveType = async (data) => {
-  try {
-    const response = await API.post(
-      "/admin/leave/leave-type/register",
-      data,
-    );
-    return response.data;
-  } catch (error) {
-    return {
-      success: false,
-      message: error.response?.data?.message || error.message,
-    };
-  }
-};
+
 
 

@@ -36,7 +36,7 @@ export const getUsersService = async (page, limits, user) => {
   }
 };
 
-export const registerUserService = async ({ data }) => {
+export const registerUserService = async ({ data }, managerId) => {
   try {
     if (!data.email || !data.password) {
       return {
@@ -53,6 +53,7 @@ export const registerUserService = async ({ data }) => {
 
     const userData = await User.create({
       ...data,
+      managerId : managerId,
       password: hashedPassword,
       attendancePolicyId: attendancePolicy.id,
     });

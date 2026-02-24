@@ -10,7 +10,7 @@ export const registerInController = async (req, res, next) => {
     const response = await attendanceServices.registerInService(
       req.user.id,
       req.body,
-      ipAddress
+      ipAddress,
     );
 
     if (response.success) {
@@ -32,7 +32,11 @@ export const registerOutController = async (req, res, next) => {
   try {
     const ipAddress = getIP(req);
 
-    const response = await attendanceServices.registerOutService(req.user.id, req.body, ipAddress);
+    const response = await attendanceServices.registerOutService(
+      req.user.id,
+      req.body,
+      ipAddress,
+    );
 
     if (response.success) {
       return successResponse(
@@ -67,5 +71,25 @@ export const getTodayAttendance = async (req, res, next) => {
     }
   } catch (error) {
     next(error);
+  }
+};
+
+export const getAttendanceSummary = async (req, res) => {
+  try {
+    const userId = req.user.id;
+    const { month, year } = req.query;
+
+    const response = await attendanceServices.getAttendanceSummary(userId, month, year);
+
+    if (response.success) {
+      return successResponse(res, response.data, response.message);
+    } else {
+      return errorResponse(res, response.message);
+    }
+  } catch (error) {
+    return res.status(400).json({
+      status: "fail",
+      message: error.message,
+    });
   }
 };

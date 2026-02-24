@@ -23,11 +23,13 @@
     "dayjs": "^1.11.19",
     "dotenv": "^17.2.3",
     "react": "^19.2.0",
+    "react-calendar": "^6.0.0",
     "react-dom": "^19.2.0",
     "react-redux": "^9.2.0",
     "react-router-dom": "^7.11.0",
     "react-timer-hook": "^4.0.5",
     "react-toastify": "^11.0.5",
+    "recharts": "^3.7.0",
     "redux-persist": "^6.0.0",
     "socket.io-client": "^4.8.3",
     "tailwindcss": "^4.1.18"

@@ -5,11 +5,12 @@ import { adminAuth, userAuth } from "../../middlewares/auth.middleware.js";
 
 const Router = express.Router();
 
-Router.get("/leave/leave-type", userAuth,lmsController.getLeaveTypes);
-
 Router.post(
-  "/lms/leave/leave-type/register",adminAuth,
+  "/leave/leave-type",
+  adminAuth,
   leaveController.registerLeaveType,
 );
+
+Router.get("/leave/leave-type", userAuth, lmsController.getLeaveTypes);
 
 export const leaveTypeRouter = Router;

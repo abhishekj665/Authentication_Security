@@ -18,6 +18,7 @@ import {
   attendanceMailTemplate,
 } from "../../utils/attendanceMail.utils.js";
 import { sendMail } from "../../config/otpService.js";
+import { getToday } from "../../utils/localTime.utils.js";
 
 const getActivePolicy = async (date, transaction) => {
   const d = date.toISOString().slice(0, 10);
@@ -128,6 +129,7 @@ export const registerInService = async (userId, { data }, ipAddress) => {
         {
           userId,
           punchInAt: now,
+          date: getToday,
           lastInAt: now,
           workedMinutes: 0,
           isLate,
@@ -279,8 +281,23 @@ export const registerOutService = async (userId, { data }, ipAddress) => {
       row.id,
       transaction,
     );
+    const workedMinutes = Math.floor(totalSeconds / 60);
+    const totalHours = Math.floor(workedMinutes / 60);
 
-    row.workedMinutes = Math.floor(totalSeconds / 60);
+    let isHalfDay = false;
+    let isFullDay = false;
+
+    if (totalHours >= 4 && totalHours < 8) {
+      isHalfDay = true;
+      isFullDay = false;
+    } else if (totalHours >= 8) {
+      isFullDay = true;
+      isHalfDay = false;
+    }
+
+    row.workedMinutes = workedMinutes;
+    row.isFullDay = isFullDay;
+    row.isHalfDay = isHalfDay;
     row.punchOutAt = now;
 
     await row.save({ transaction });
@@ -331,5 +348,60 @@ export const getTodayAttendanceService = async (userId) => {
     };
   } catch (error) {
     throw new ExpressError(STATUS.BAD_REQUEST, error.message);
+  }
+};
+
+export const getAttendanceSummary = async (userId, month, year) => {
+  try {
+    const monthNum = Number(month);
+    const yearNum = Number(year);
+
+    if (!monthNum || !yearNum) {
+      throw new Error("Invalid month or year");
+    }
+
+    const monthStr = String(monthNum).padStart(2, "0");
+    const startDate = `${yearNum}-${monthStr}-01`;
+    const lastDay = new Date(yearNum, monthNum, 0).getDate();
+    const endDate = `${yearNum}-${monthStr}-${lastDay}`;
+
+    const attendanceData = await Attendance.findAll({
+      where: {
+        userId,
+        status: "APPROVED",
+        date: {
+          [Op.between]: [startDate, endDate],
+        },
+      },
+      attributes: ["isLate", "isHalfDay", "workedMinutes", "date"],
+    });
+
+    let totalPresent = 0;
+    let totalHalfDay = 0;
+    let totalLate = 0;
+
+    attendanceData.forEach((item) => {
+      if (item.isHalfDay) {
+        totalHalfDay++;
+      } else {
+        totalPresent++;
+      }
+
+      if (item.isLate) {
+        totalLate++;
+      }
+    });
+
+    return {
+      success: true,
+      data: {
+        totalDays: attendanceData.length,
+        totalPresent,
+        totalHalfDay,
+        totalLate,
+      },
+    };
+  } catch (error) {
+    throw error;
   }
 };
