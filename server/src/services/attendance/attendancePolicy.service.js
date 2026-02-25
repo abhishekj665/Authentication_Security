@@ -1,5 +1,4 @@
-import { AttendancePolicy } from "../../models/Associations.model.js";
-import OvertimePolicy from "../../models/OvertimePolicy.js";
+import { AttendancePolicy, OvertimePolicy } from "../../models/Associations.model.js";
 import ExpressError from "../../utils/Error.utils.js";
 import STATUS from "../../constants/Status.js";
 import { sequelize } from "../../config/db.js";
