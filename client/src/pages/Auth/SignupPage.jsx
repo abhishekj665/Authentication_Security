@@ -12,6 +12,7 @@ import {
   Paper,
 } from "@mui/material";
 import { toast } from "react-toastify";
+import LanguageIcon from "@mui/icons-material/Language";
 import Hero from "../../components/Hero";
 import { registerUser } from "../../redux/auth/authThunk";
 import { useDispatch } from "react-redux";
@@ -94,7 +95,8 @@ function SignupPage() {
       <div className="w-full">
         <Box
           sx={{
-            minHeight : "100vh",
+            position: "relative",
+            minHeight: "100vh",
             display: "flex",
             flexDirection: { xs: "column", md: "row" },
             alignItems: "center",
@@ -105,6 +107,27 @@ function SignupPage() {
             paddingRight: "0",
           }}
         >
+          <Box
+            sx={{
+              position: "absolute",
+              top: 20,
+              right: 30,
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              cursor: "pointer",
+              color: "#2563eb",
+              "&:hover": {
+                color: "#2563eb",
+              },
+            }}
+            onClick={() => navigate("/careers")}
+          >
+            <LanguageIcon sx={{ fontSize: 22 }} />
+            <Typography variant="body2" fontWeight={500}>
+              Careers
+            </Typography>
+          </Box>
           <Paper
             elevation={0}
             sx={{

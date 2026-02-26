@@ -49,6 +49,11 @@ const HiringStage = sequelize.define(
       type: DataTypes.JSON,
       allowNull: true,
     },
+    isDefault: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
   },
   {
     timestamps: true,

@@ -38,6 +38,9 @@ import ManagerLeaveDashboard from "./pages/ManagerPages/ManagerLeaveDashboard";
 import AdminLeaveDashboard from "./pages/AdminPages/AdminLeaveDashboard";
 import AdminLeavePolicyPage from "./pages/AdminPages/LeavePolicyPage";
 import LeaveTypePage from "./pages/AdminPages/LeaveTypePage";
+import CareersPage from "./pages/CareerPages/CareerPage";
+import JobDetailPage from "./pages/CareerPages/JobDetailPage";
+import JobApplicationPage from "./pages/CareerPages/JobApplicationPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -86,6 +89,9 @@ function App() {
             />
           </Route>
 
+          <Route path="/careers" element={<CareersPage />}></Route>
+          <Route path="/careers/:slug" element={<JobDetailPage />} />
+          <Route path="/careers/:slug/apply" element={<JobApplicationPage />} />
           <Route path="/" element={<SignUpPage />}></Route>
           <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>

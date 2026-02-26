@@ -26,6 +26,11 @@ const JobRequisition = sequelize.define(
     employmentType: {
       type: DataTypes.ENUM("FULLTIME", "INTERN", "PARTTIME", "CONTRACT"),
     },
+    headCount : {
+      type : DataTypes.INTEGER,
+      allowNull : false,
+      defaultValue : 1
+    },
     location: {
       type: DataTypes.STRING,
       allowNull: false,

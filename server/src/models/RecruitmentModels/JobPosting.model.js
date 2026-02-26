@@ -38,23 +38,31 @@ const JobPosting = sequelize.define(
     isActive: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
-      defaultValue: true,
+      defaultValue: false,
+    },
+    slug: {
+      type: DataTypes.STRING,
+      allowNull: true,
     },
     publishedAt: {
       type: DataTypes.DATE,
       defaultValue: DataTypes.NOW,
     },
-    expirestAt: {
+    expiresAt: {
       type: DataTypes.DATE,
       allowNull: true,
     },
-    extrenalUrl: {
+    externalUrl: {
       type: DataTypes.STRING,
       allowNull: true,
     },
     createdBy: {
       type: DataTypes.UUID,
       allowNull: false,
+    },
+    editedBy: {
+      type: DataTypes.UUID,
+      allowNull: true,
     },
   },
   {

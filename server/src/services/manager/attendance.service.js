@@ -371,7 +371,6 @@ export const bulkAttendanceRequestApprove = async ({ ids }, managerId) => {
       },
     );
 
-    // ✅ Update AttendanceRequest table
     await AttendanceRequest.update(
       {
         status: "APPROVED",
