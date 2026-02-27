@@ -1,7 +1,8 @@
 import express from "express";
-import {  userAuth } from "../../middlewares/auth.middleware.js";
+import { userAuth } from "../../middlewares/auth.middleware.js";
 
 import * as accountController from "../../controllers/user/account.controller.js";
+import { allowRoles } from "../../middlewares/roleAuth.middleware.js";
 
 export const accountRouter = express.Router();
 
@@ -9,6 +10,10 @@ accountRouter.use(userAuth);
 
 accountRouter
   .route("/")
-  .get(accountController.getAccountData)
-  .post(accountController.registerAccount);
-accountRouter.put("/update", accountController.updateAccount);
+  .get(allowRoles("manager", "user"), accountController.getAccountData)
+  .post(allowRoles("manager", "user"), accountController.registerAccount);
+accountRouter.put(
+  "/update",
+  allowRoles("manager", "user"),
+  accountController.updateAccount,
+);

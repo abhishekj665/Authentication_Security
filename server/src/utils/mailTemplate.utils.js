@@ -600,6 +600,127 @@ Automated message from Asset System. Please do not reply.
 </html>`;
 };
 
+export const getJobRequisitionEmailTemplate = (data) => {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Job Requisition Approval</title>
+</head>
+<body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8; padding:40px 0;">
+    <tr>
+      <td align="center">
+
+        <!-- Main Container -->
+        <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; overflow:hidden;">
+
+          <!-- Header -->
+          <tr>
+            <td style="background:#1976d2; padding:20px; color:#ffffff; font-size:20px; font-weight:bold;">
+              Job Requisition Approval Required
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding:30px; color:#333333; font-size:14px; line-height:1.6;">
+
+              <p>Hello Admin,</p>
+
+              <p>A new job requisition has been submitted and requires your approval. Please review the details below:</p>
+
+              <!-- Details Table -->
+              <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse; margin-top:20px;">
+
+                <tr>
+                  <td style="background:#f2f2f2; font-weight:bold;">Requisition ID</td>
+                  <td>${data.id}</td>
+                </tr>
+
+                <tr>
+                  <td style="background:#f9f9f9; font-weight:bold;">Job Title</td>
+                  <td>${data.title}</td>
+                </tr>
+
+                <tr>
+                  <td style="background:#f2f2f2; font-weight:bold;">Employment Type</td>
+                  <td>${data.employmentType}</td>
+                </tr>
+
+                <tr>
+                  <td style="background:#f9f9f9; font-weight:bold;">Location</td>
+                  <td>${data.location}</td>
+                </tr>
+
+                <tr>
+                  <td style="background:#f2f2f2; font-weight:bold;">Experience</td>
+                  <td>${data.experienceMin} - ${data.experienceMax} Years</td>
+                </tr>
+
+                <tr>
+                  <td style="background:#f9f9f9; font-weight:bold;">Budget Range</td>
+                  <td>₹${data.budgetMin} - ₹${data.budgetMax}</td>
+                </tr>
+
+                <tr>
+                  <td style="background:#f2f2f2; font-weight:bold;">Head Count</td>
+                  <td>${data.headCount}</td>
+                </tr>
+
+                <tr>
+                  <td style="background:#f9f9f9; font-weight:bold;">Priority</td>
+                  <td>${data.priority}</td>
+                </tr>
+
+                <tr>
+                  <td style="background:#f2f2f2; font-weight:bold;">Status</td>
+                  <td>${data.status}</td>
+                </tr>
+
+              </table>
+
+              <!-- Description -->
+              <div style="margin-top:25px;">
+                <p style="font-weight:bold;">Job Description</p>
+                <p style="background:#f9f9f9; padding:15px; border-radius:4px;">
+                  ${data.jobDescription}
+                </p>
+              </div>
+
+              <!-- CTA Button -->
+              <div style="text-align:center; margin-top:30px;">
+                <a href="${env.client_url}/admin/job-requisitions/${data.id}"
+                   style="background:#1976d2; color:#ffffff; text-decoration:none; padding:12px 25px; border-radius:4px; display:inline-block; font-weight:bold;">
+                  Review & Approve
+                </a>
+              </div>
+
+              <p style="margin-top:30px;">Regards,<br/>HR Management System</p>
+
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background:#f2f2f2; padding:15px; text-align:center; font-size:12px; color:#777;">
+              This is an automated notification. Please do not reply directly to this email.
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>
+`;
+};
+
 export function escapeHtml(value) {
   const str = String(value ?? "");
 
@@ -802,3 +923,215 @@ export function getLeaveRejectedTemplate({
   </html>
   `;
 }
+
+const buildCommonRows = (data) => {
+  return `
+    ${row("Requisition ID", data.requisitionId)}
+    ${row("Job Title", data.title)}
+    ${row("Location", data.location)}
+    ${row("Employment Type", data.employmentType)}
+    ${row("Experience", `${data.experienceMin} - ${data.experienceMax} Years`)}
+    ${row("Budget Range", `₹${data.budgetMin} - ₹${data.budgetMax}`)}
+    ${row("Head Count", data.headCount)}
+    ${row("Priority", data.priority)}
+  `;
+};
+
+const row = (label, value) => `
+  <tr>
+    <td style="background:#f2f2f2; font-weight:bold;">${label}</td>
+    <td>${value}</td>
+  </tr>
+`;
+
+const footerSection = () => `
+  <tr>
+    <td style="background:#f2f2f2; padding:15px; text-align:center; font-size:12px; color:#777;">
+      This is an automated notification. Please do not reply directly.
+    </td>
+  </tr>
+`;
+
+const formatDate = (date) => {
+  if (!date) return "-";
+  return new Date(date).toLocaleDateString("en-IN", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
+};
+
+export const requisitionRequestApprovalEmailTemplate = (data) => {
+  const {
+    requisitionId,
+    title,
+    location,
+    employmentType,
+    experienceMin,
+    experienceMax,
+    budgetMin,
+    budgetMax,
+    headCount,
+    priority,
+    approvedAt,
+  } = data;
+
+  return `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Job Requisition Approved</title>
+  </head>
+  <body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+      <tr>
+        <td align="center">
+
+          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; overflow:hidden;">
+
+            <tr>
+              <td style="background:#2e7d32; padding:20px; color:#ffffff; font-size:20px; font-weight:bold;">
+                Job Requisition Approved
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:30px; color:#333333; font-size:14px; line-height:1.6;">
+                <p>Hello,</p>
+                <p>Your job requisition has been successfully approved.</p>
+
+                <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse; margin-top:20px;">
+                  ${buildCommonRows({
+                    requisitionId,
+                    title,
+                    location,
+                    employmentType,
+                    experienceMin,
+                    experienceMax,
+                    budgetMin,
+                    budgetMax,
+                    headCount,
+                    priority,
+                  })}
+
+                  <tr>
+                    <td style="background:#f9f9f9; font-weight:bold;">Approved On</td>
+                    <td>${formatDate(approvedAt)}</td>
+                  </tr>
+                </table>
+
+                <div style="text-align:center; margin-top:30px;">
+                  <a href="${env.client_url}" 
+                     style="background:#2e7d32; color:#ffffff; text-decoration:none; padding:12px 25px; border-radius:4px; display:inline-block; font-weight:bold;">
+                    View Job Posting
+                  </a>
+                </div>
+
+                <p style="margin-top:30px;">
+                  Regards,<br/>
+                  HR Management System
+                </p>
+              </td>
+            </tr>
+
+            ${footerSection()}
+
+          </table>
+
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>
+  `;
+};
+
+export const requisitionRejectionEmailTemplate = (data) => {
+  const {
+    requisitionId,
+    title,
+    location,
+    employmentType,
+    experienceMin,
+    experienceMax,
+    budgetMin,
+    budgetMax,
+    headCount,
+    priority,
+    remark,
+    loginUrl,
+  } = data;
+
+  return `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Job Requisition Rejected</title>
+  </head>
+  <body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, sans-serif;">
+    <table width="100%" cellpadding="0" cellspacing="0" style="padding:40px 0;">
+      <tr>
+        <td align="center">
+
+          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff; border-radius:8px; overflow:hidden;">
+
+            <tr>
+              <td style="background:#c62828; padding:20px; color:#ffffff; font-size:20px; font-weight:bold;">
+                Job Requisition Rejected
+              </td>
+            </tr>
+
+            <tr>
+              <td style="padding:30px; color:#333333; font-size:14px; line-height:1.6;">
+                <p>Hello,</p>
+                <p>Your job requisition was reviewed and has been rejected.</p>
+
+                <table width="100%" cellpadding="8" cellspacing="0" style="border-collapse:collapse; margin-top:20px;">
+                  ${buildCommonRows({
+                    requisitionId,
+                    title,
+                    location,
+                    employmentType,
+                    experienceMin,
+                    experienceMax,
+                    budgetMin,
+                    budgetMax,
+                    headCount,
+                    priority,
+                  })}
+                </table>
+
+                <div style="margin-top:25px;">
+                  <p style="font-weight:bold;">Admin Remark</p>
+                  <p style="background:#fdecea; padding:15px; border-radius:4px; border:1px solid #f5c6cb;">
+                    ${remark || "No remark provided."}
+                  </p>
+                </div>
+
+                <div style="text-align:center; margin-top:30px;">
+                  <a href="${loginUrl}" 
+                     style="background:#c62828; color:#ffffff; text-decoration:none; padding:12px 25px; border-radius:4px; display:inline-block; font-weight:bold;">
+                    Review Requisition
+                  </a>
+                </div>
+
+                <p style="margin-top:30px;">
+                  Regards,<br/>
+                  HR Management System
+                </p>
+              </td>
+            </tr>
+
+            ${footerSection()}
+
+          </table>
+
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>
+  `;
+};

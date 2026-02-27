@@ -4,6 +4,7 @@ import { getAllJobs } from "../../services/CareersService/jobsService";
 import { toast } from "react-toastify";
 import { useEffect } from "react";
 import { useState } from "react";
+import HomeIcon from "@mui/icons-material/Home";
 export default function CareersPage() {
   const navigate = useNavigate();
 
@@ -27,6 +28,31 @@ export default function CareersPage() {
 
   return (
     <div className="bg-gray-50 min-h-screen">
+      <div className="bg-white border-b">
+        <Container maxWidth="lg">
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 1,
+              py: 1.5,
+              cursor: "pointer",
+              width: "fit-content",
+            }}
+            onClick={() => navigate("/login")}
+          >
+            <HomeIcon fontSize="small" color="primary" />
+            <Typography
+              sx={{
+                fontWeight: 500,
+                "&:hover": { textDecoration: "underline" },
+              }}
+            >
+              Home
+            </Typography>
+          </Box>
+        </Container>
+      </div>
       {/* HERO */}
       <div className="relative h-112.5 flex items-center">
         <img

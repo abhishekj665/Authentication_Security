@@ -1,11 +1,12 @@
 import express from "express";
 import * as leavePolicyController from "../../controllers/admin/leavePolicy.controller.js";
 import { adminAuth, userAuth } from "../../middlewares/auth.middleware.js";
+import { allowRoles } from "../../middlewares/roleAuth.middleware.js";
 
 
 const Router = express.Router();
 
-Router.get("/policy/all", userAuth,leavePolicyController.getLeavePolicies);
+Router.get("/policy/all", userAuth,allowRoles("manager", "admin", "user"), leavePolicyController.getLeavePolicies);
 
 Router.post("/policy/register",adminAuth, leavePolicyController.registerLeavePolicy);
 Router.put("/policy/update/:id", adminAuth,leavePolicyController.updateLeavePolicy);

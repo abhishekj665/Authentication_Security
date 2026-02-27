@@ -1,25 +1,28 @@
 import jwt from "jsonwebtoken";
 import { env } from "../config/env.js";
+import { User } from "../models/Associations.model.js";
 
-
-export const userAuth = (req, res, next) => {
+export const userAuth = async (req, res, next) => {
   const token = req.cookies.token;
-
-  if (!token) return res.status(401).json({ message: "User not verified" });
+  if (!token) return res.status(401).json({ message: "Unauthorized" });
 
   try {
     const decode = jwt.verify(token, env.jwt_password);
-    req.user = decode;
+
+    const user = await User.findByPk(decode.id);
+
+    if (!user || user.isBlocked)
+      return res.status(403).json({ message: "Access denied" });
+
+    req.user = user;
     next();
   } catch (error) {
-    return res.status(403).json({ message: error.message });
+    return res.status(403).json({ message: "Invalid token" });
   }
 };
 
 export const adminAuth = (req, res, next) => {
   const token = req.cookies.token;
-
- 
 
   if (!token) return res.status(401).json({ message: "User not verified" });
   try {

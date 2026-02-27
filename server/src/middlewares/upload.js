@@ -21,3 +21,23 @@ export const uploadReceipt = multer({
   fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 },
 });
+
+const resumeFileFilter = (req, file, cb) => {
+  const allowed = [
+    "application/pdf",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  ];
+
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only PDF and Word documents are allowed"));
+  }
+};
+
+export const uploadResume = multer({
+  storage,
+  resumeFileFilter,
+  limits: { fileSize: 3 * 1024 * 1024 },
+});

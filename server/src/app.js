@@ -11,6 +11,7 @@ import { attendancePolicyRouter } from "./routes/attendanceRoutes/attendancePoli
 import { LMSRouter } from "./routes/lms/lms.route.js";
 import { RecuirmentRouter } from "./routes/recuirment/recuirment.route.js";
 
+
 import cors from "cors";
 import path from "path";
 import { env } from "./config/env.js";
@@ -47,6 +48,7 @@ app.use("/attendance-policy", attendancePolicyRouter);
 app.use("/lms", LMSRouter);
 
 app.use("/recuirment", RecuirmentRouter);
+
 
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));

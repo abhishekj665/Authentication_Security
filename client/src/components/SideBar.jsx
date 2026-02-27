@@ -8,6 +8,8 @@ import LocalMallIcon from "@mui/icons-material/LocalMall";
 import ManageHistoryIcon from "@mui/icons-material/ManageHistory";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import CalendarMonthIcon from "@mui/icons-material/CalendarMonth";
+import WorkHistoryIcon from "@mui/icons-material/WorkHistory";
+import WorkOutlineIcon from '@mui/icons-material/WorkOutline';
 import { useSelector } from "react-redux";
 
 export default function Sidebar({ open, setOpen }) {
@@ -119,6 +121,20 @@ export default function Sidebar({ open, setOpen }) {
           className={linkClass}
         >
           <CalendarMonthIcon /> Leave Requests
+        </NavLink>
+
+        <NavLink
+          to="/admin/job-requisition"
+          onClick={() => setOpen(false)}
+          className={linkClass}
+        >
+          <WorkHistoryIcon /> Job Requisition
+        </NavLink><NavLink
+          to="/admin/job-posts"
+          onClick={() => setOpen(false)}
+          className={linkClass}
+        >
+          <WorkOutlineIcon /> Job Post
         </NavLink>
       </nav>
     </aside>

@@ -50,7 +50,9 @@ export const getJobPosting = async (id) => {
 
 export const getJobPostings = async () => {
   try {
-    const jobPostings = await JobPosting.findAll();
+    const jobPostings = await JobPosting.findAll({
+      order: [["createdAt", "DESC"]],
+    });
     if (!jobPostings)
       throw new ExpressError(STATUS.NOT_FOUND, "No job postings found");
 
@@ -193,7 +195,6 @@ export const getJob = async (slug) => {
             "isOfferStage",
             "isDefault",
           ],
-          
         },
       ],
       order: [[{ model: HiringStage, as: "stages" }, "stageOrder", "ASC"]],

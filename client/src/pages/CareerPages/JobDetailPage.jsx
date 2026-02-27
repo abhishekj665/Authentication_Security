@@ -26,6 +26,10 @@ export default function JobDetailPage() {
     }
   };
 
+  const handleApply = () => {
+    navigate(`/careers/${slug}/apply`);
+  };
+
   useEffect(() => {
     fetchJobDetail();
   }, []);
@@ -198,7 +202,7 @@ export default function JobDetailPage() {
             variant="contained"
             fullWidth
             size="large"
-            onClick={() => navigate(`/careers/${slug}/apply`)}
+            onClick={handleApply}
           >
             Apply Now
           </Button>

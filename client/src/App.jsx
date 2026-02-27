@@ -41,6 +41,9 @@ import LeaveTypePage from "./pages/AdminPages/LeaveTypePage";
 import CareersPage from "./pages/CareerPages/CareerPage";
 import JobDetailPage from "./pages/CareerPages/JobDetailPage";
 import JobApplicationPage from "./pages/CareerPages/JobApplicationPage";
+import ManagerRequisitionPage from "./pages/ManagerPages/JobRequistionPage";
+import AdminRequisitionPage from "./pages/AdminPages/AdminRequistionPage";
+import AdminJobPostsPage from "./pages/AdminPages/AdminJobPostsPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -73,6 +76,8 @@ function App() {
             <Route path="leave-requests" element={<AdminLeaveDashboard />} />
             <Route path="leave-policy" element={<AdminLeavePolicyPage />} />
             <Route path="leave-type" element={<LeaveTypePage />} />
+            <Route path="job-requisition" element={<AdminRequisitionPage />} />
+            <Route path="job-posts" element={<AdminJobPostsPage />} />
           </Route>
 
           <Route path="/manager/dashboard" element={<ManagerLayout />}>
@@ -83,6 +88,10 @@ function App() {
             <Route path="attendance/me" element={<ManagerAttendancePage />} />
             <Route path="expenses" element={<ManagerExpensesPage />} />
             <Route path="leave-requests" element={<ManagerLeaveDashboard />} />
+            <Route
+              path="job-requisition"
+              element={<ManagerRequisitionPage />}
+            />
             <Route
               path="leave/management"
               element={<ManagerLeaveManagement />}

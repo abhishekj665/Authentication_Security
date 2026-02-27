@@ -37,6 +37,7 @@ export const signUpService = async ({ first_name, email, password }) => {
     email: email,
     password: hashedPassword,
     isVerified: false,
+    role: "user",
   });
 
   const otp = generateOtp();

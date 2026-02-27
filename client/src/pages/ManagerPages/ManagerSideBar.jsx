@@ -5,6 +5,7 @@ import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import RequestPageIcon from '@mui/icons-material/RequestPage';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
+import WorkHistoryIcon from '@mui/icons-material/WorkHistory';
 import { useSelector } from "react-redux";
 
 export default function ManagerSidebar({ open, setOpen }) {
@@ -89,6 +90,13 @@ export default function ManagerSidebar({ open, setOpen }) {
           className={linkClass}
         >
           <CalendarMonthIcon/> Leave Requests
+        </NavLink>
+        <NavLink
+          to="/manager/dashboard/job-requisition"
+          onClick={() => setOpen(false)}
+          className={linkClass}
+        >
+          <WorkHistoryIcon/> Job Requisition
         </NavLink>
 
         

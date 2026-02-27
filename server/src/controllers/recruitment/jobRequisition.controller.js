@@ -26,7 +26,7 @@ export const registerJobRequisition = async (req, res, next) => {
 
 export const getJobRequisitions = async (req, res, next) => {
   try {
-    const response = await JobRequisitionService.getJobRequisitions();
+    const response = await JobRequisitionService.getJobRequisitions(req.user);
 
     if (response.success) {
       return successResponse(res, response.data, response.message, STATUS.OK);
@@ -75,7 +75,6 @@ export const approveJobRequisition = async (req, res, next) => {
   try {
     const response = await JobRequisitionService.approveJobRequisition(
       req.params.id,
-      req.body.remark,
       req.user.id,
     );
 

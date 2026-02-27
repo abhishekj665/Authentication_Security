@@ -1,6 +1,7 @@
 import * as attendanceController from "../../controllers/attendance/attendance.controller.js";
 
 import { userAuth } from "../../middlewares/auth.middleware.js";
+import { allowRoles } from "../../middlewares/roleAuth.middleware.js";
 
 import express from "express";
 
@@ -8,10 +9,22 @@ const Router = express.Router();
 
 Router.use(userAuth);
 
-Router.route("/summary").get(attendanceController.getAttendanceSummary);
+Router.route("/summary").get(
+  allowRoles("manager", "user", "admin"),
+  attendanceController.getAttendanceSummary,
+);
 
-Router.route("/in").post(attendanceController.registerInController);
-Router.route("/out").put(attendanceController.registerOutController);
-Router.route("/today").get(attendanceController.getTodayAttendance);
+Router.route("/in").post(
+  allowRoles("manager", "user", "admin"),
+  attendanceController.registerInController,
+);
+Router.route("/out").put(
+  allowRoles("manager", "user", "admin"),
+  attendanceController.registerOutController,
+);
+Router.route("/today").get(
+  allowRoles("manager", "user", "admin"),
+  attendanceController.getTodayAttendance,
+);
 
 export const attendanceRouter = Router;

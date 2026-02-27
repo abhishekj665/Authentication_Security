@@ -14,6 +14,8 @@ import {
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Snackbar, Alert } from "@mui/material";
+import { registerJobApplication } from "../../services/CareersService/appllicationService";
+import { useEffect } from "react";
 
 const steps = [
   "Personal Info",
@@ -71,16 +73,52 @@ export default function JobApplicationPage() {
     }
   };
 
-  const handleSubmit = () => {
-    if (!agree) return alert("You must accept terms");
+  const handleSubmit = async () => {
+    if (!agree) {
+      setToast({
+        open: true,
+        message: "You must accept terms",
+        severity: "error",
+      });
+      return;
+    }
 
-    console.log("Submitting:", form, resumeFile);
+    try {
+      const formData = new FormData();
 
-    setSubmitted(true);
+      Object.keys(form).forEach((key) => {
+        formData.append(key, form[key]);
+      });
 
-    setTimeout(() => {
-      navigate("/careers");
-    }, 5000);
+      formData.append("resume", resumeFile);
+      const response = await registerJobApplication(slug, formData);
+
+      if (response.success) {
+        setToast({
+          open: true,
+          message: response.message,
+          severity: "success",
+        });
+
+        setSubmitted(true);
+
+        setTimeout(() => {
+          navigate("/careers");
+        }, 3000);
+      }else{
+        setToast({
+          open: true,
+          message: response.message,
+          severity: "info",
+        });
+      }
+    } catch (err) {
+      setToast({
+        open: true,
+        message: err.response?.data?.message || "Something went wrong",
+        severity: "error",
+      });
+    }
   };
 
   const validateStep = () => {
@@ -120,6 +158,10 @@ export default function JobApplicationPage() {
 
     return true;
   };
+
+  useEffect(() => {
+    
+  })
 
   return (
     <Container maxWidth="md" className="py-16">
@@ -298,7 +340,7 @@ export default function JobApplicationPage() {
                 Next
               </Button>
             ) : (
-              <Button variant="contained" onClick={handleSubmit}>
+              <Button variant="contained" onClick={() => handleSubmit(6)}>
                 Submit Application
               </Button>
             )}
