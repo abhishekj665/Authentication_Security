@@ -23,7 +23,7 @@ export default function UserSidebar({ open, setOpen }) {
 
   const linkClass = ({ isActive }) =>
     `flex items-center gap-3 p-2 rounded-md transition 
-     ${isActive ? "bg-gray-200 text-black" : "text-gray-600 hover:text-black"}`;
+     ${isActive ? " text-black" : "text-gray-600 hover:text-black"}`;
 
   return (
     <aside

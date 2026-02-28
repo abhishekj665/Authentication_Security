@@ -329,7 +329,7 @@ export default function AttendanceData() {
           </Box>
 
           <TableContainer
-            style={{ backgroundColor: "#F5F5F5" }}
+            
             component={Paper}
             className="rounded-xl"
           >

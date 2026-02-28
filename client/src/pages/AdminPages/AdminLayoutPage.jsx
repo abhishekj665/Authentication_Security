@@ -27,7 +27,7 @@ export default function AdminLayout() {
   }
 
   return (
-    <div className="flex h-[96vh] bg-gray-100 relative">
+    <div className="flex h-[96vh]  relative">
       {open && (
         <div
           onClick={() => setOpen(false)}

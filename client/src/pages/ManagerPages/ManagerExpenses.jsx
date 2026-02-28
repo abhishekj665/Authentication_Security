@@ -119,7 +119,7 @@ const ManagerExpensesPage = () => {
     <div className="p-3">
       <h1 className="text-2xl font-semibold mb-4">Expense Requests</h1>
 
-      <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper}>
+      <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>
@@ -269,14 +269,14 @@ const ManagerExpensesPage = () => {
             <div className="space-y-3 text-sm">
               <div>
                 <label className="font-medium">Requester</label>
-                <div className="border rounded p-2 bg-gray-50">
+                <div className="border rounded p-2 ">
                   {approveUserEmail.split("@")[0]}
                 </div>
               </div>
 
               <div>
                 <label className="font-medium">Requested Amount</label>
-                <div className="border rounded p-2 bg-gray-50">
+                <div className="border rounded p-2 ">
                   ₹ {approveRequestedAmount}
                 </div>
               </div>

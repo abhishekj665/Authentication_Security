@@ -11,6 +11,12 @@ export default function JobDetailPage() {
   const [open, setOpen] = useState(false);
   const [job, setJob] = useState({});
 
+  const isExpired = job?.expiresAt && new Date(job.expiresAt) < new Date();
+
+  const isInactive = job && job.isActive === false;
+
+  const isApplicationClosed = isExpired || isInactive;
+
   const navigate = useNavigate();
 
   const fetchJobDetail = async () => {
@@ -27,7 +33,11 @@ export default function JobDetailPage() {
   };
 
   const handleApply = () => {
-    navigate(`/careers/${slug}/apply`);
+    try {
+      navigate(`/careers/${slug}/apply`);
+    } catch (error) {
+      toast.error(error.message);
+    }
   };
 
   useEffect(() => {
@@ -122,6 +132,29 @@ export default function JobDetailPage() {
             <Typography className="text-gray-500 text-sm">Location</Typography>
             <Typography>{job?.requisition?.location}</Typography>
           </div>
+          <Divider />
+
+          <div>
+            <Typography className="text-gray-500 text-sm">Posted On</Typography>
+            <Typography>
+              {job?.createdAt
+                ? new Date(job.createdAt).toLocaleDateString()
+                : "-"}
+            </Typography>
+          </div>
+
+          <Divider />
+
+          <div>
+            <Typography className="text-gray-500 text-sm">
+              Last Date to Apply
+            </Typography>
+            <Typography color={isExpired ? "error" : "inherit"}>
+              {job?.expiresAt
+                ? new Date(job.expiresAt).toLocaleDateString()
+                : "Not Specified"}
+            </Typography>
+          </div>
 
           <Divider />
 
@@ -143,10 +176,8 @@ export default function JobDetailPage() {
             </Typography>
 
             <div className="mt-8">
-              {/* DESKTOP VERSION */}
               <div className="hidden md:block relative">
-                {/* Background Line */}
-                <div className="absolute top-3 left-0 right-0 h-0.5 bg-gray-300" />
+                <div className="absolute top-3 left-0 right-0 h-0.5 " />
 
                 <div className="flex justify-between items-start relative">
                   {job?.stages?.map((stage) => (
@@ -154,7 +185,7 @@ export default function JobDetailPage() {
                       key={stage.id}
                       className="flex flex-col items-center text-center w-20"
                     >
-                      <div className="w-6 h-6 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-xs font-bold z-10">
+                      <div className="w-6 h-6 rounded-full  text-gray-600 flex items-center justify-center text-xs font-bold z-10">
                         {stage.stageOrder}
                       </div>
 
@@ -178,11 +209,11 @@ export default function JobDetailPage() {
                   >
                     {/* Vertical Line */}
                     {index !== job.stages.length - 1 && (
-                      <div className="absolute left-3 top-6 w-0.5 h-full bg-gray-300" />
+                      <div className="absolute left-3 top-6 w-0.5 h-full " />
                     )}
 
                     {/* Dot */}
-                    <div className="w-6 h-6 rounded-full bg-gray-300 text-gray-600 flex items-center justify-center text-xs font-bold z-10">
+                    <div className="w-6 h-6 rounded-full  text-gray-600 flex items-center justify-center text-xs font-bold z-10">
                       {stage.stageOrder}
                     </div>
 
@@ -203,8 +234,13 @@ export default function JobDetailPage() {
             fullWidth
             size="large"
             onClick={handleApply}
+            disabled={isApplicationClosed}
           >
-            Apply Now
+            {isInactive
+              ? "Post Not Active"
+              : isExpired
+                ? "Application Closed"
+                : "Apply Now"}
           </Button>
         </div>
       </Container>

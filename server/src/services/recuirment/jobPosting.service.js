@@ -165,6 +165,7 @@ export const getJob = async (slug) => {
         "publishedAt",
         "externalUrl",
         "expiresAt",
+        "createdAt",
       ],
       include: [
         {

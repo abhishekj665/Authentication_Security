@@ -284,7 +284,7 @@ const AdminAsset = () => {
         <h2 className="text-xl font-semibold mb-4">All Assets</h2>
 
         <TableContainer
-          style={{ backgroundColor: "#F5F5F5" }}
+          
           component={Paper}
         >
           <Table>

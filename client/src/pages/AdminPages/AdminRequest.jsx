@@ -105,7 +105,7 @@ const AdminRequest = () => {
     <div className="p-2">
       <h1 className="text-2xl w-5 font-semibold mb-4">Asset Requests</h1>
 
-      <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper}>
+      <TableContainer  component={Paper}>
         <Table>
           <TableHead>
             <TableRow>

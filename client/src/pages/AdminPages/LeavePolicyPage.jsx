@@ -262,7 +262,7 @@ export default function LeavePolicyPage() {
   const selectedEditIds = editForm?.rules?.map((r) => r.leaveTypeId) || [];
 
   return (
-    <div className="p-6 bg-gray-50 min-h-screen">
+    <div className="p-6  min-h-screen">
       <div className="flex justify-between items-center mb-6">
         <Typography variant="h5" className="font-semibold">
           Leave Policies
@@ -280,7 +280,7 @@ export default function LeavePolicyPage() {
       <TableContainer component={Paper} className="shadow-md rounded-xl">
         <Table>
           <TableHead>
-            <TableRow className="bg-gray-100">
+            <TableRow >
               <TableCell>Name</TableCell>
               <TableCell>Effective From</TableCell>
               <TableCell>Effective To</TableCell>

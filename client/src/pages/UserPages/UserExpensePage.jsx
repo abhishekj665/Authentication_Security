@@ -163,7 +163,7 @@ export default function UserExpensePage() {
         <div className="mt-10 p-6">
           <h2 className="text-xl font-semibold mb-4">Your Expenses</h2>
 
-          <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper}>
+          <TableContainer  component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>

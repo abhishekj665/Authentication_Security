@@ -154,7 +154,7 @@ export default function Topbar({ open, setOpen }) {
   const pad = (n) => String(n).padStart(2, "0");
 
   return (
-    <div className="h-16 shadow flex items-center justify-between px-2">
+    <div className="h-16 shadow flex border-b items-center justify-between px-2">
       <div className="flex items-center mr-5 gap-2">
         <div className="md:hidden">
           <IconButton onClick={() => setOpen(!open)}>

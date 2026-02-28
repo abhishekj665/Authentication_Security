@@ -40,7 +40,7 @@ export const registerLeavePolicy = async (data, adminId) => {
       );
     }
 
-    console.log(policy.appliesTo);
+   
 
 
     await assignPolicyBulk(policy.id, policy.appliesTo, policy.year, t);
@@ -62,7 +62,7 @@ export const registerLeavePolicy = async (data, adminId) => {
 export const updateLeavePolicy = async (id, data, adminId) => {
   const t = await sequelize.transaction();
 
-  console.log(data);
+  
 
   try {
     const { rules = [], ...policyData } = data;

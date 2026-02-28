@@ -23,7 +23,11 @@ import { registerUser } from "../../services/AdminService/userService";
 
 import { toast } from "react-toastify";
 
-import { blockUser, unBlockUser, getUser } from "../../services/AdminService/userService"
+import {
+  blockUser,
+  unBlockUser,
+  getUser,
+} from "../../services/AdminService/userService";
 
 const roleColor = (role) => {
   if (role === "admin") return "error";
@@ -213,7 +217,7 @@ const AdminUserPage = () => {
         </div>
       </div>
 
-      <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper}>
+      <TableContainer component={Paper}>
         <Table>
           <TableHead>
             <TableRow>

@@ -1135,3 +1135,113 @@ export const requisitionRejectionEmailTemplate = (data) => {
   </html>
   `;
 };
+
+export const jobApplicationReceivedEmailTemplate = (data) => {
+  const {
+    firstName,
+    companyName,
+    jobTitle,
+    careersUrl = env.client_url,
+    year = new Date().getFullYear(),
+  } = data;
+
+  return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Application Received</title>
+</head>
+
+<body style="margin:0; padding:0; background-color:#f4f6f8; font-family:Arial, Helvetica, sans-serif;">
+
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8; padding:40px 0;">
+    <tr>
+      <td align="center">
+
+        <table width="650" cellpadding="0" cellspacing="0" 
+               style="background-color:#ffffff; border-radius:8px; padding:40px;">
+
+          <!-- Header -->
+          <tr>
+            <td style="font-size:22px; font-weight:600; color:#111827;">
+              ${companyName}
+            </td>
+          </tr>
+
+          <tr>
+            <td style="padding-top:30px; font-size:20px; font-weight:600; color:#111827;">
+              We've received your application
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="padding-top:20px; font-size:15px; line-height:1.7; color:#4b5563;">
+
+              Hi ${firstName},<br><br>
+
+              Thank you for applying for the <strong>${jobTitle}</strong> position at ${companyName}.
+              We sincerely appreciate the time and effort you invested in submitting your application.
+
+              <br><br>
+
+              Our hiring team is currently reviewing applications to identify candidates whose experience and skills closely align with the role requirements. 
+              Every application is evaluated carefully to ensure a fair and thorough selection process.
+
+              <br><br>
+
+              If your profile matches what we are looking for, our team will reach out to you regarding the next steps, which may include:
+
+              <ul style="margin-top:10px; padding-left:20px; color:#4b5563;">
+                <li>Initial screening discussion</li>
+                <li>Technical or role-specific assessment</li>
+                <li>Interaction with the hiring team</li>
+              </ul>
+
+              Please note that review timelines may vary depending on the number of applications received. 
+              If shortlisted, you will be contacted directly by our recruitment team.
+
+              <br><br>
+
+              In the meantime, feel free to explore other opportunities with us.
+
+              <br><br>
+
+              We appreciate your interest in joining ${companyName} and wish you the very best.
+            </td>
+          </tr>
+
+          <!-- CTA Button -->
+          <tr>
+            <td align="left" style="padding-top:30px;">
+              <a href="${careersUrl}"
+                 style="background-color:#111827; color:#ffffff; padding:12px 28px; text-decoration:none; border-radius:6px; font-size:14px; font-weight:500; display:inline-block;">
+                View More Opportunities
+              </a>
+            </td>
+          </tr>
+
+          <!-- Divider -->
+          <tr>
+            <td style="padding-top:40px;">
+              <hr style="border:none; border-top:1px solid #e5e7eb;">
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="padding-top:20px; font-size:13px; color:#9ca3af; line-height:1.6;">
+              This is an automated confirmation email. Please do not reply to this message.<br><br>
+              © ${year} ${companyName}. All rights reserved.
+            </td>
+          </tr>
+
+        </table>
+
+      </td>
+    </tr>
+  </table>
+
+</body>
+</html>`;
+};

@@ -27,7 +27,7 @@ export default function CareersPage() {
   }, []);
 
   return (
-    <div className="bg-gray-50 min-h-screen">
+    <div className=" min-h-screen">
       <div className="bg-white border-b">
         <Container maxWidth="lg">
           <Box

@@ -264,7 +264,7 @@ export default function UserAttendanceData() {
             </FormControl>
           </Box>
 
-          <TableContainer style={{ backgroundColor: "#F5F5F5" }} component={Paper}>
+          <TableContainer component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>

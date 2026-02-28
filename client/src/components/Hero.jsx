@@ -9,7 +9,7 @@ function Hero() {
         md:flex
         
         items-center 
-        bg-gray-400
+       
         bg-[url('https://imgs.search.brave.com/N8Lj7B9fG5lTZuspuF8K5CaEA4vbgIb8nyl6H62tsvE/rs:fit:860:0:0:0/g:ce/aHR0cHM6Ly9tZWRp/YS5nZXR0eWltYWdl/cy5jb20vaWQvMTU5/NDA1MDk4OS92ZWN0/b3IvYmxhY2stYW5k/LXdoaXRlLWJsYW5r/LXBvc3RlcnMtaGFu/Z2luZy13aXRoLXBh/cGVyLWNsaXBzLWE0/LXBhcGVyLXBhZ2Ut/c2hlZXQtb24td2Fs/bC5qcGc_cz02MTJ4/NjEyJnc9MCZrPTIw/JmM9NktPWkg4VXZY/ZloxR1U2ZEozQ1Yz/RnBTX1JibGZ0TFJI/a050ZkFPSnhpMD0')]
         bg-cover 
         bg-center

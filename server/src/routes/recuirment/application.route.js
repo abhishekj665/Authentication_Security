@@ -10,4 +10,7 @@ Router.post(
   ApplicationController.registerApplication,
 );
 
+Router.get("/application/all", ApplicationController.getApplications);
+Router.get("/application/:id", ApplicationController.getApplicationById);
+
 export const ApplicationRouter = Router;

@@ -12,6 +12,13 @@
   cursor: wait;
 }
 
+html,
+body,
+#root {
+  background-color: #ffffff !important;
+  height: 100%;
+}
+
 .prod-loader-card {
   background: transparent;
   padding: 0;
@@ -67,4 +74,18 @@
 
 .small-calendar .react-calendar__navigation button {
   font-size: 13px;
+}
+
+.sidebar-scroll::-webkit-scrollbar {
+  width: 0px;
+  height: 0px;
+}
+
+.sidebar-scroll::-webkit-scrollbar-thumb {
+  background: transparent;
+}
+
+.sidebar-scroll {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }

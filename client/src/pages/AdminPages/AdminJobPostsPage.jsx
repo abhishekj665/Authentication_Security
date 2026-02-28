@@ -58,6 +58,7 @@ export default function AdminJobPostsPage() {
       visibility: job.visibility || "INTERNAL",
       description: job.description || "",
       isActive: job.isActive || false,
+      expiresAt: job.expiresAt ? job.expiresAt.substring(0, 10) : "",
     });
     setOpenDialog(true);
   };
@@ -206,6 +207,18 @@ export default function AdminJobPostsPage() {
                   />
 
                   <Detail
+                    label="Deadline"
+                    value={
+                      job.expiresAt
+                        ? new Date(job.expiresAt) < new Date()
+                          ? "Expired"
+                          : new Date(job.expiresAt).toLocaleDateString()
+                        : "Not Set"
+                    }
+                    icon={<EventAvailableIcon fontSize="small" />}
+                  />
+
+                  <Detail
                     label="Status"
                     value={job.isActive ? "Active" : "Inactive"}
                     icon={<InfoOutlinedIcon fontSize="small" />}
@@ -283,6 +296,18 @@ export default function AdminJobPostsPage() {
                 />
               }
               label="Active Status"
+            />
+
+            <TextField
+              label="Deadline"
+              type="date"
+              value={form.expiresAt || ""}
+              onChange={(e) => setForm({ ...form, expiresAt: e.target.value })}
+              InputLabelProps={{ shrink: true }}
+              inputProps={{
+                min: new Date().toISOString().split("T")[0],
+              }}
+              fullWidth
             />
 
             <TextField

@@ -7,8 +7,6 @@ export const registerApplication = async (req, res, next) => {
   try {
     let resumeUrl = null;
 
-    console.log(req.file);
-
     if (req.file) {
       try {
         const upload = await cloudinary.uploader.upload(req.file.path, {
@@ -19,17 +17,45 @@ export const registerApplication = async (req, res, next) => {
         fs.unlinkSync(req.file.path);
       }
     }
-
-    console.log(resumeUrl);
     req.body.resumeUrl = resumeUrl;
-
-    console.log(req.body.resumeUrl);
 
     const response = await ApplicationService.registerApplication(
       req.params.slug,
       req.body,
     );
 
+    if (response.success) {
+      return successResponse(
+        res,
+        response.data,
+        response.message,
+        response.status,
+      );
+    } else {
+      return errorResponse(res, response.message, response.status);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getApplications = async (req, res, next) => {
+  try {
+    const response = await ApplicationService.getApplications(req.query);
+
+    if (response.success) {
+      return successResponse(res, response.data, response.message);
+    } else {
+      return errorResponse(res, response.message);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getApplicationById = async (req, res, next) => {
+  try {
+    const response = await ApplicationService.getApplicationById(req.params.id);
     if (response.success) {
       return successResponse(res, response.data, response.message);
     } else {

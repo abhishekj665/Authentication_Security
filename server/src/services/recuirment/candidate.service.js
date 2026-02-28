@@ -1,5 +1,5 @@
 import ExpressError from "../../utils/Error.utils.js";
-import { Candidate, Candidate } from "../../models/Associations.model.js";
+import { Candidate } from "../../models/Associations.model.js";
 import STATUS from "../../constants/Status.js";
 import { where } from "sequelize";
 
@@ -44,9 +44,10 @@ export const getCandidateByJobPost = async (id) => {
   }
 };
 
-export const getCandidate = async (id) => {
+export const getCandidate = async (email) => {
   try {
-    const candidate = await Candidate.findByPk(id);
+    
+    const candidate = await Candidate.findOne({ where: { email } });
 
     if (!candidate)
       throw new ExpressError(STATUS.NOT_FOUND, "No candidate found");

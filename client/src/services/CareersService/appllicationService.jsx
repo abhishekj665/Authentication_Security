@@ -15,6 +15,43 @@ export const registerJobApplication = async (slug, data) => {
         error.response?.data?.message ||
         error.message ||
         "Something went wrong",
+      status: error.response?.status || 500,
+    };
+  }
+};
+
+export const getApplications = async (query) => {
+  try {
+    const response = await API.get("/recuirment/application/all", {
+      params: query,
+    });
+
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong",
+      status: error.response?.status || 500,
+    };
+  }
+};
+
+export const getApplicationById = async (id) => {
+  try {
+    const response = await API.get(`/recuirment/application/${id}`);
+
+    return response.data;
+  } catch (error) {
+    return {
+      success: false,
+      message:
+        error.response?.data?.message ||
+        error.message ||
+        "Something went wrong",
+      status: error.response?.status || 500,
     };
   }
 };

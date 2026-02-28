@@ -44,6 +44,7 @@ import JobApplicationPage from "./pages/CareerPages/JobApplicationPage";
 import ManagerRequisitionPage from "./pages/ManagerPages/JobRequistionPage";
 import AdminRequisitionPage from "./pages/AdminPages/AdminRequistionPage";
 import AdminJobPostsPage from "./pages/AdminPages/AdminJobPostsPage";
+import AdminJobApplicationsPage from "./pages/AdminPages/JobApplicationPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -78,6 +79,10 @@ function App() {
             <Route path="leave-type" element={<LeaveTypePage />} />
             <Route path="job-requisition" element={<AdminRequisitionPage />} />
             <Route path="job-posts" element={<AdminJobPostsPage />} />
+            <Route
+              path="job-applications"
+              element={<AdminJobApplicationsPage />}
+            />
           </Route>
 
           <Route path="/manager/dashboard" element={<ManagerLayout />}>

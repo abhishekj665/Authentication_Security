@@ -136,7 +136,7 @@ export default function UserAssetPage() {
         <div className="mt-10 p-6 ">
           <h2 className="text-xl font-semibold mb-4">Your Requests</h2>
 
-          <TableContainer style={{ backgroundColor: "#F5F5F5" }} className="w-full" component={Paper}>
+          <TableContainer className="w-full" component={Paper}>
             <Table>
               <TableHead>
                 <TableRow>
