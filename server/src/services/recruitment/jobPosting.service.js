@@ -16,6 +16,10 @@ export const updateJobPosting = async (id, data, userId) => {
     if (!jobPosting)
       throw new ExpressError(STATUS.NOT_FOUND, "No job posting found");
 
+    if(data.expiresAt && new Date(data.expiresAt) < new Date()){
+      throw new ExpressError(STATUS.BAD_REQUEST, "Expiration date cannot be in the past");
+    }
+
     await jobPosting.update({ ...data, editedBy: userId }, { transaction });
 
     await transaction.commit();

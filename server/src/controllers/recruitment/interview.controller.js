@@ -1,4 +1,4 @@
-import * as interviewService from "../../services/recuirment/interview.service.js";
+import * as interviewService from "../../services/recruitment/interview.service.js";
 import { successResponse, errorResponse } from "../../utils/response.utils.js";
 
 export const getInterviewers = async (req, res, next) => {

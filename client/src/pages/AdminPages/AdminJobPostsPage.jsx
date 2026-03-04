@@ -64,11 +64,17 @@ export default function AdminJobPostsPage() {
   };
 
   const handleUpdate = async () => {
-    const res = await updateJobPost(selectedId, form);
-    if (res.success) {
-      toast.success("Job Post Updated");
-      setOpenDialog(false);
-      fetchData();
+    try {
+      const res = await updateJobPost(selectedId, form);
+      if (res.success) {
+        toast.success("Job Post Updated");
+        setOpenDialog(false);
+        fetchData();
+      } else {
+        toast.error(res.message || "Failed to update job post");
+      }
+    } catch (error) {
+      toast.error("Failed to update job post");
     }
   };
 

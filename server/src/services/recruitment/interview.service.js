@@ -105,6 +105,20 @@ export const assignInterview = async (data, userId) => {
     if (!interviewer)
       throw new ExpressError(STATUS.NOT_FOUND, "Interviewer not found");
 
+    const stage = application.currentStage;
+
+    if (
+      stage.isDefault ||
+      stage.isRejectStage ||
+      stage.isOfferStage ||
+      stage.isFinal
+    ) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "Interview cannot be scheduled for this stage",
+      );
+    }
+
     const nextStage = await HiringStage.findOne({
       where: {
         jobPostingId: application.jobPostingId,
@@ -114,12 +128,6 @@ export const assignInterview = async (data, userId) => {
         isFinal: { [Op.not]: true },
       },
     });
-
-    if (!nextStage)
-      throw new ExpressError(
-        STATUS.BAD_REQUEST,
-        "Next hiring stage not configured, Interview already proceed",
-      );
 
     const newStart = dayjs(data.scheduledAt);
     const newEnd = newStart.add(data.duration, "minute");
@@ -160,7 +168,7 @@ export const assignInterview = async (data, userId) => {
       {
         interviewerId: interviewer.id,
         ...data,
-        roundName: nextStage.name,
+        roundName: nextStage?.name || application.currentStage.name,
         applicationId: application.id,
       },
       { transaction },
@@ -340,48 +348,45 @@ export const confirmInterview = async (id) => {
         jobPostingId: interview.application.jobPostingId,
         stageOrder: interview.application.currentStage.stageOrder + 1,
         isRejectStage: { [Op.not]: true },
-        isDefault: { [Op.not]: true },
-        isFinal: { [Op.not]: true },
-        isOfferStage: { [Op.not]: true },
       },
     });
 
-    if (!nextStage)
-      throw new ExpressError(
-        STATUS.BAD_REQUEST,
-        "Next hiring stage not configured",
-      );
-
     const application = interview.application;
 
-    await application.update({ currentStageId: nextStage.id }, { transaction });
+    if (nextStage && !nextStage.isFinal && !nextStage.isOfferStage) {
+      await application.update(
+        { currentStageId: nextStage.id },
+        { transaction },
+      );
 
-    await ApplicationStageLog.create(
-      {
-        applicationId: application.id,
-        fromStageId: interview.application.currentStage.id,
-        toStageId: nextStage.id,
-        changedBy: interview.interviewerId,
-        changedByType: "INTERVIEWER",
-        oldStatus: interview.application.currentStage.name,
-        newStatus: nextStage.name,
-        autoMoved: true,
-      },
-      { transaction },
-    );
-
+      await ApplicationStageLog.create(
+        {
+          applicationId: application.id,
+          fromStageId: interview.application.currentStage.id,
+          toStageId: nextStage.id,
+          changedBy: interview.interviewerId,
+          changedByType: "INTERVIEWER",
+          oldStatus: interview.application.currentStage.name,
+          newStatus: nextStage.name,
+          autoMoved: true,
+        },
+        { transaction },
+      );
+    }
     await interview.update({ status: "SCHEDULED" }, { transaction });
 
     await transaction.commit();
 
     const html = generateCandidateInterviewEmail({
-      candidateName: interview.application.candidate.email.split("@")[0],
+      candidateName:
+        interview.application.candidate.firstName ||
+        interview.application.candidate.email.split("@")[0],
       jobTitle: interview.application.jobPosting.title,
       companyName: "Orvane Digitals",
       interviewDate: dayjs(interview.scheduledAt).format("DD MMM YYYY"),
       interviewTime: dayjs(interview.scheduledAt).format("hh:mm A"),
       duration: interview.duration,
-      roundName: interview.application.currentStage.name,
+      roundName: nextStage?.name || interview.application.currentStage.name,
       mode: interview.mode,
       meetingLink: interview.meetingUrl,
       location: interview.location,
@@ -578,21 +583,33 @@ export const rescheduleInterview = async (id, data, userId) => {
       throw new Error("No pending confirmation interview found");
     }
 
+    const application = interview.application;
+
     const nextStage = await HiringStage.findOne({
       where: {
-        jobPostingId: interview.application.jobPostingId,
-        stageOrder: interview.application.currentStage.stageOrder + 1,
-        isRejectStage: { [Op.not]: true },
-        isDefault: { [Op.not]: true },
-        isFinal: { [Op.not]: true },
-        isOfferStage: { [Op.not]: true },
+        jobPostingId: application.jobPostingId,
+        stageOrder: application.currentStage.stageOrder + 1,
       },
-      transaction,
     });
 
-    if (!nextStage) {
-      throw new Error(
-        "Can not schedule interview application interview already proceed",
+    if (nextStage && !nextStage.isFinal && !nextStage.isOfferStage) {
+      await Application.update(
+        { currentStageId: nextStage.id },
+        { where: { id: application.id }, transaction },
+      );
+
+      await ApplicationStageLog.create(
+        {
+          applicationId: application.id,
+          fromStageId: application.currentStage.id,
+          toStageId: nextStage.id,
+          changedBy: userId,
+          changedByType: "INTERVIEWER",
+          oldStatus: application.currentStage.name,
+          newStatus: nextStage.name,
+          remark: data.remark,
+        },
+        { transaction },
       );
     }
 
@@ -613,14 +630,6 @@ export const rescheduleInterview = async (id, data, userId) => {
       { transaction },
     );
 
-    await Application.update(
-      { currentStageId: nextStage.id },
-      {
-        where: { id: interview.applicationId },
-        transaction,
-      },
-    );
-
     await InterviewAuditLog.create(
       {
         interviewId: interview.id,
@@ -630,20 +639,6 @@ export const rescheduleInterview = async (id, data, userId) => {
         oldScheduledAt: interview.scheduledAt,
         newScheduledAt: data.proposedScheduledAt,
         remark: data.remark,
-      },
-      { transaction },
-    );
-
-    await ApplicationStageLog.create(
-      {
-        applicationId: interview.applicationId,
-        fromStageId: interview.application.currentStage.id,
-        toStageId: nextStage.id,
-        changedBy: userId,
-        oldStatus: interview.application.currentStage.name,
-        newStatus: nextStage.name,
-        remark: data.remark,
-        changedByType: "INTERVIEWER",
       },
       { transaction },
     );

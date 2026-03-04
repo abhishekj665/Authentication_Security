@@ -1,4 +1,4 @@
-import * as CandidateService from "../../services/recuirment/candidate.service.js";
+import * as CandidateService from "../../services/recruitment/candidate.service.js";
 import { successResponse, errorResponse } from "../../utils/response.utils.js";
 import ExpressError from "../../utils/Error.utils.js";
 

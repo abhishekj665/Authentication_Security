@@ -3,7 +3,7 @@ import { API } from "../AuthService/authService";
 export const registerJobApplication = async (slug, data) => {
   try {
     const response = await API.post(
-      `/recuirment/application/apply/${slug}`,
+      `/recruitment/application/apply/${slug}`,
       data,
     );
 
@@ -22,7 +22,7 @@ export const registerJobApplication = async (slug, data) => {
 
 export const getApplications = async (query) => {
   try {
-    const response = await API.get("/recuirment/application/all", {
+    const response = await API.get("/recruitment/application/all", {
       params: query,
     });
 
@@ -41,7 +41,7 @@ export const getApplications = async (query) => {
 
 export const getApplicationById = async (id) => {
   try {
-    const response = await API.get(`/recuirment/application/${id}`);
+    const response = await API.get(`/recruitment/application/${id}`);
 
     return response.data;
   } catch (error) {
@@ -59,7 +59,7 @@ export const getApplicationById = async (id) => {
 export const shortlistApplication = async (id) => {
   
   try {
-    const response = await API.patch(`/recuirment/application/shortlist/${id}`);
+    const response = await API.patch(`/recruitment/application/shortlist/${id}`);
 
     return response.data;
   } catch (error) {
@@ -76,7 +76,7 @@ export const shortlistApplication = async (id) => {
 
 export const rejectApplication = async (id) => {
   try {
-    const response = await API.patch(`/recuirment/application/reject/${id}`);
+    const response = await API.patch(`/recruitment/application/reject/${id}`);
 
     return response.data;
   } catch (error) {

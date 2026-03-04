@@ -2,7 +2,7 @@ import { API } from "../AuthService/authService";
 
 export const getAllJobRequisitions = async () => {
   try {
-    const response = await API.get("/recuirment/job-requisitions");
+    const response = await API.get("/recruitment/job-requisitions");
     return response.data;
   } catch (error) {
     return {
@@ -15,7 +15,7 @@ export const getAllJobRequisitions = async () => {
 
 export const registerJobRequisition = async (data) => {
   try {
-    const response = await API.post("/recuirment/job-requisition", data);
+    const response = await API.post("/recruitment/job-requisition", data);
     return response.data;
   } catch (error) {
     return {
@@ -28,7 +28,7 @@ export const registerJobRequisition = async (data) => {
 
 export const updateJobRequisition = async (id, data) => {
   try {
-    const response = await API.put(`/recuirment/job-requisition/${id}`, data);
+    const response = await API.put(`/recruitment/job-requisition/${id}`, data);
     return response.data;
   } catch (error) {
     return {
@@ -41,7 +41,7 @@ export const updateJobRequisition = async (id, data) => {
 
 export const approveJobRequisition = async (id) => {
   try {
-    const response = await API.patch(`/recuirment/job-requisition/approve/${id}`);
+    const response = await API.patch(`/recruitment/job-requisition/approve/${id}`);
     return response.data;
   } catch (error) {
     return {
@@ -54,7 +54,7 @@ export const approveJobRequisition = async (id) => {
 
 export const rejectJobRequisition = async (id, remark) => {
   try {
-    const response = await API.patch(`/recuirment/job-requisition/reject/${id}`,remark);
+    const response = await API.patch(`/recruitment/job-requisition/reject/${id}`,remark);
     return response.data;
   } catch (error) {
     return {

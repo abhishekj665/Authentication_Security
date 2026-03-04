@@ -1,6 +1,6 @@
 import { successResponse, errorResponse } from "../../utils/response.utils.js";
 import STATUS from "../../constants/Status.js";
-import * as JobRequisitionService from "../../services/recuirment/jobRequisition.service.js";
+import * as JobRequisitionService from "../../services/recruitment/jobRequisition.service.js";
 
 export const registerJobRequisition = async (req, res, next) => {
   try {

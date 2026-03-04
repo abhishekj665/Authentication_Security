@@ -2023,3 +2023,213 @@ export function getAdminInterviewDeclinedTemplate({
   </html>
   `;
 }
+
+export const nextRoundSelectedEmailTemplate = ({
+  candidateName = "Candidate",
+  jobTitle,
+  companyName = "Orvane Digitals",
+  nextStageName,
+  supportEmail = "support@orvanve",
+}) => {
+  return `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Interview Update</title>
+  </head>
+
+  <body style="margin:0;padding:0;background-color:#f4f6f8;font-family:Arial,Helvetica,sans-serif;">
+
+    <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8;padding:20px;">
+      <tr>
+        <td align="center">
+
+          <table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
+
+            <!-- Header -->
+            <tr>
+              <td style="background:#1976d2;padding:20px;text-align:center;color:#ffffff;">
+                <h2 style="margin:0;">${companyName}</h2>
+              </td>
+            </tr>
+
+            <!-- Body -->
+            <tr>
+              <td style="padding:30px;color:#333333;line-height:1.6;">
+
+                <p style="margin-top:0;">Dear ${candidateName},</p>
+
+                <p>
+                  Thank you for taking the time to interview with us for the 
+                  <strong>${jobTitle}</strong> position at <strong>${companyName}</strong>.
+                </p>
+
+                <p>
+                  We are pleased to inform you that based on your recent interview performance,
+                  you have successfully progressed to the <strong>${nextStageName}</strong> stage 
+                  of our hiring process.
+                </p>
+
+                <p>
+                  Our team was impressed with your skills, experience, and the insights you shared
+                  during the interview. We believe your profile shows strong potential for the role,
+                  and we are excited to continue the conversation.
+                </p>
+
+                <p>
+                  Our recruitment team will reach out to you shortly with further details regarding 
+                  the next round, including scheduling information and any preparation guidelines 
+                  you may need.
+                </p>
+
+                <p>
+                  In the meantime, if you have any questions or require assistance, please feel free 
+                  to contact us at <a href="mailto:${supportEmail}" style="color:#1976d2;text-decoration:none;">
+                  ${supportEmail}</a>.
+                </p>
+
+                <p>
+                  We appreciate your interest in joining <strong>${companyName}</strong> and look 
+                  forward to speaking with you again soon.
+                </p>
+
+                <p style="margin-bottom:0;">
+                  Best regards,<br/>
+                  <strong>${companyName} Recruitment Team</strong>
+                </p>
+
+              </td>
+            </tr>
+
+            <!-- Footer -->
+            <tr>
+              <td style="background:#f1f3f5;padding:20px;text-align:center;font-size:12px;color:#777;">
+                <p style="margin:0;">
+                  This is an automated message regarding your job application.
+                </p>
+                <p style="margin:5px 0 0 0;">
+                  © ${new Date().getFullYear()} ${companyName}. All rights reserved.
+                </p>
+              </td>
+            </tr>
+
+          </table>
+
+        </td>
+      </tr>
+    </table>
+
+  </body>
+  </html>
+  `;
+};
+
+export const interviewRejectionEmailTemplate = ({
+  candidateName,
+  jobTitle,
+  companyName = "Our Company",
+  stageName,
+  supportEmail = "careers@company.com",
+}) => {
+  return `
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>Interview Update</title>
+</head>
+
+<body style="margin:0;padding:0;background-color:#f4f6f8;font-family:Arial,Helvetica,sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#f4f6f8;padding:20px;">
+<tr>
+<td align="center">
+
+<table width="600" cellpadding="0" cellspacing="0" style="background:#ffffff;border-radius:8px;overflow:hidden;">
+
+<!-- Header -->
+<tr>
+<td style="background:#1976d2;padding:20px;text-align:center;color:#ffffff;">
+<h2 style="margin:0;">${companyName}</h2>
+</td>
+</tr>
+
+<!-- Body -->
+<tr>
+<td style="padding:30px;color:#333333;line-height:1.6;">
+
+<p style="margin-top:0;">Dear ${candidateName},</p>
+
+<p>
+Thank you for taking the time to interview with us for the 
+<strong>${jobTitle}</strong> position at <strong>${companyName}</strong>.
+We sincerely appreciate the time and effort you invested throughout the
+interview process.
+</p>
+
+<p>
+After careful consideration following the 
+<strong>${stageName}</strong> stage of our hiring process,
+we regret to inform you that we will not be progressing with your
+application to the next stage.
+</p>
+
+<p>
+Please understand that this decision was made after reviewing all
+candidate profiles against the specific requirements of the role.
+While we were impressed by many aspects of your background, we have
+chosen to move forward with candidates whose experience more closely
+aligns with the current needs of the position.
+</p>
+
+<p>
+This outcome should not discourage you from applying to future
+opportunities at <strong>${companyName}</strong>. We regularly open
+new roles and would be happy to review your application again if
+a suitable position becomes available.
+</p>
+
+<p>
+We truly appreciate your interest in joining our team and thank you
+again for your time and participation in the interview process.
+</p>
+
+<p>
+If you have any questions, feel free to reach out to us at 
+<a href="mailto:${supportEmail}" style="color:#1976d2;text-decoration:none;">
+${supportEmail}
+</a>.
+</p>
+
+<p>
+We wish you continued success in your career and all the best in your
+future endeavors.
+</p>
+
+<p style="margin-bottom:0;">
+Kind regards,<br/>
+<strong>${companyName} Recruitment Team</strong>
+</p>
+
+</td>
+</tr>
+
+<!-- Footer -->
+<tr>
+<td style="background:#f1f3f5;padding:20px;text-align:center;font-size:12px;color:#777;">
+<p style="margin:0;">This message was sent regarding your job application.</p>
+<p style="margin:5px 0 0 0;">© ${new Date().getFullYear()} ${companyName}. All rights reserved.</p>
+</td>
+</tr>
+
+</table>
+
+</td>
+</tr>
+</table>
+
+</body>
+</html>
+`;
+};

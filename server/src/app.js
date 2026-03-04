@@ -9,8 +9,7 @@ import { managerRouter } from "./routes/managerRoutes/manager.routes.js";
 import { attendanceRouter } from "./routes/attendanceRoutes/attendance.routes.js";
 import { attendancePolicyRouter } from "./routes/attendanceRoutes/attendancePolicy.routes.js";
 import { LMSRouter } from "./routes/lms/lms.route.js";
-import { RecuirmentRouter } from "./routes/recuirment/recuirment.route.js";
-
+import { RecruitmentRouter } from "./routes/recruitment/recruitment.route.js";
 
 import cors from "cors";
 import path from "path";
@@ -47,9 +46,7 @@ app.use("/attendance-policy", attendancePolicyRouter);
 
 app.use("/lms", LMSRouter);
 
-app.use("/recuirment", RecuirmentRouter);
-
-
+app.use("/recruitment", RecruitmentRouter);
 
 app.use("/uploads", express.static(path.join(process.cwd(), "uploads")));
 

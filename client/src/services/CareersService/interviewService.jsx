@@ -2,7 +2,7 @@ import { API } from "../AuthService/authService";
 
 export const getInterviewers = async () => {
   try {
-    const response = await API.get("/recuirment/interview/interviewers");
+    const response = await API.get("/recruitment/interview/interviewers");
 
     return response.data;
   } catch (error) {
@@ -19,7 +19,7 @@ export const getInterviewers = async () => {
 
 export const assignInterview = async (data) => {
   try {
-    const response = await API.post("/recuirment/interview/assign", data);
+    const response = await API.post("/recruitment/interview/assign", data);
 
     return response.data;
   } catch (error) {
@@ -36,7 +36,7 @@ export const assignInterview = async (data) => {
 
 export const getManagerInterviews = async (query) => {
   try {
-    const response = await API.get("/recuirment/interview/all", {
+    const response = await API.get("/recruitment/interview/all", {
       params: query,
     });
 
@@ -55,7 +55,7 @@ export const getManagerInterviews = async (query) => {
 
 export const confirmInterview = async (id) => {
   try {
-    const response = await API.patch(`/recuirment/interview/confirm/${id}`);
+    const response = await API.patch(`/recruitment/interview/confirm/${id}`);
     console.log(response);
     return response.data;
   } catch (error) {
@@ -73,7 +73,7 @@ export const confirmInterview = async (id) => {
 export const declineInterview = async (id, remark) => {
   try {
     const response = await API.patch(
-      `/recuirment/interview/decline/${id}`,
+      `/recruitment/interview/decline/${id}`,
       remark,
     );
     return response.data;
@@ -89,7 +89,7 @@ export const declineInterview = async (id, remark) => {
 
 export const requestReschedule = async (id, data) => {
   try {
-    const response = await API.patch(`/recuirment/interview/reschedule/${id}`, data);
+    const response = await API.patch(`/recruitment/interview/reschedule/${id}`, data);
     return response.data;
   } catch (error) {
     return {
@@ -103,7 +103,7 @@ export const requestReschedule = async (id, data) => {
 
 export const getActiveInterview = async (id) => {
   try {
-    const response = await API.get(`/recuirment/interview/active/${id}`);
+    const response = await API.get(`/recruitment/interview/active/${id}`);
     return response.data;
   } catch (error) {
     return {

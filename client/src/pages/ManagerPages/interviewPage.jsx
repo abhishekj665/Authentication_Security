@@ -34,6 +34,14 @@ import {
   Event,
 } from "@mui/icons-material";
 
+import { Rating, Divider, Paper } from "@mui/material";
+import PsychologyIcon from "@mui/icons-material/Psychology";
+import RecordVoiceOverIcon from "@mui/icons-material/RecordVoiceOver";
+import LightbulbIcon from "@mui/icons-material/Lightbulb";
+import ThumbUpAltIcon from "@mui/icons-material/ThumbUpAlt";
+
+import { RateReview, Star, ThumbUp } from "@mui/icons-material";
+
 import Grid from "@mui/material/Grid";
 import InputAdornment from "@mui/material/InputAdornment";
 
@@ -47,6 +55,8 @@ import {
   declineInterview,
   requestReschedule,
 } from "../../services/CareersService/interviewService";
+
+import { submitInterviewFeedback } from "../../services/CareersService/interviewFeedbackService";
 
 export default function ManagerInterviewsPage() {
   const [rows, setRows] = useState([]);
@@ -66,6 +76,20 @@ export default function ManagerInterviewsPage() {
   const [proposedDate, setProposedDate] = useState("");
   const [proposedTime, setProposedTime] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const [feedbackDialog, setFeedbackDialog] = useState(null);
+
+  const [feedback, setFeedback] = useState({
+    technicalScore: 3,
+    communicationScore: 3,
+    problemSolvingScore: 3,
+    recommendation: "HOLD",
+    strength: "",
+    weakness: "",
+    remark: "",
+  });
+
+  const [feedbackSubmitting, setFeedbackSubmitting] = useState(false);
 
   const isInvalidDateRange =
     fromDate && toDate && dayjs(toDate).isBefore(dayjs(fromDate));
@@ -95,6 +119,29 @@ export default function ManagerInterviewsPage() {
       toast.error("Failed to fetch interviews");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const submitFeedback = async () => {
+    try {
+      setFeedbackSubmitting(true);
+
+      const response = await submitInterviewFeedback(
+        feedbackDialog.interviewId,
+        feedback,
+      );
+
+      if (response.success) {
+        toast.success("Feedback submitted successfully");
+        setFeedbackDialog(null);
+        fetchInterviews();
+      } else {
+        toast.error(response.message);
+      }
+    } catch (err) {
+      toast.error(err.message);
+    } finally {
+      setFeedbackSubmitting(false);
     }
   };
 
@@ -224,9 +271,9 @@ export default function ManagerInterviewsPage() {
                 >
                   <MenuItem value="">All Status</MenuItem>
                   <MenuItem value="PENDING_CONFIRMATION">Pending</MenuItem>
-                  <MenuItem value="CONFIRMED">Confirmed</MenuItem>
+                  <MenuItem value="SCHEDULED">Scheduled</MenuItem>
                   <MenuItem value="DECLINED">Declined</MenuItem>
-                  <MenuItem value="RESCHEDULE_REQUESTED">Reschedule</MenuItem>
+                  <MenuItem value="RESCHEDULED">Reschedule</MenuItem>
                 </Select>
               </Grid>
 
@@ -386,11 +433,10 @@ export default function ManagerInterviewsPage() {
                           </Stack>
                         )}
 
-                        {row.status === "CONFIRMED" &&
+                        {["SCHEDULED", "RESCHEDULED"].includes(row.status) &&
                           row.mode === "ONLINE" &&
                           row.meetingUrl && (
                             <Tooltip title="Join Interview">
-                              <label>Join Interview</label>
                               <IconButton
                                 color="primary"
                                 href={row.meetingUrl}
@@ -403,12 +449,27 @@ export default function ManagerInterviewsPage() {
                           )}
 
                         {/* Offline Confirmed → Show Location Icon */}
-                        {row.status === "CONFIRMED" &&
+                        {["SCHEDULED", "RESCHEDULED"].includes(row.status) &&
                           row.mode === "OFFLINE" &&
                           row.location && (
                             <Tooltip title={row.location}>
                               <IconButton color="info">
                                 <Event />
+                              </IconButton>
+                            </Tooltip>
+                          )}
+                        {["SCHEDULED", "RESCHEDULED"].includes(row.status) &&
+                          !row.feedbackSubmitted && (
+                            <Tooltip title="Submit Feedback">
+                              <IconButton
+                                color="secondary"
+                                onClick={() =>
+                                  setFeedbackDialog({
+                                    interviewId: row.id,
+                                  })
+                                }
+                              >
+                                <RateReview />
                               </IconButton>
                             </Tooltip>
                           )}
@@ -510,6 +571,165 @@ export default function ManagerInterviewsPage() {
             disabled={submitting}
           >
             {submitting ? "Submitting..." : "Submit"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+      <Dialog
+        open={!!feedbackDialog}
+        onClose={() => setFeedbackDialog(null)}
+        maxWidth="sm"
+        fullWidth
+      >
+        <DialogTitle>
+          <Stack direction="row" spacing={1} alignItems="center">
+            <RateReview color="primary" />
+            <Typography fontWeight={600}>Interview Evaluation</Typography>
+          </Stack>
+        </DialogTitle>
+
+        <DialogContent>
+          <Stack spacing={3} mt={1}>
+            {/* Technical Skills */}
+            <Paper variant="outlined" sx={{ p: 2 }}>
+              <Stack spacing={1}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <PsychologyIcon color="primary" />
+                  <Typography fontWeight={500}>Technical Skills</Typography>
+                </Stack>
+
+                <Rating
+                  value={feedback.technicalScore}
+                  onChange={(e, newValue) =>
+                    setFeedback({
+                      ...feedback,
+                      technicalScore: newValue,
+                    })
+                  }
+                />
+              </Stack>
+            </Paper>
+
+            {/* Communication */}
+            <Paper variant="outlined" sx={{ p: 2 }}>
+              <Stack spacing={1}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <RecordVoiceOverIcon color="primary" />
+                  <Typography fontWeight={500}>Communication</Typography>
+                </Stack>
+
+                <Rating
+                  value={feedback.communicationScore}
+                  onChange={(e, newValue) =>
+                    setFeedback({
+                      ...feedback,
+                      communicationScore: newValue,
+                    })
+                  }
+                />
+              </Stack>
+            </Paper>
+
+            {/* Problem Solving */}
+            <Paper variant="outlined" sx={{ p: 2 }}>
+              <Stack spacing={1}>
+                <Stack direction="row" spacing={1} alignItems="center">
+                  <LightbulbIcon color="primary" />
+                  <Typography fontWeight={500}>Problem Solving</Typography>
+                </Stack>
+
+                <Rating
+                  value={feedback.problemSolvingScore}
+                  onChange={(e, newValue) =>
+                    setFeedback({
+                      ...feedback,
+                      problemSolvingScore: newValue,
+                    })
+                  }
+                />
+              </Stack>
+            </Paper>
+
+            <Divider />
+
+            {/* Recommendation */}
+            <Stack spacing={1}>
+              <Stack direction="row" spacing={1} alignItems="center">
+                <ThumbUpAltIcon color="primary" />
+                <Typography fontWeight={500}>Recommendation</Typography>
+              </Stack>
+
+              <Select
+                fullWidth
+                value={feedback.recommendation}
+                onChange={(e) =>
+                  setFeedback({
+                    ...feedback,
+                    recommendation: e.target.value,
+                  })
+                }
+              >
+                <MenuItem value="HIRE">Hire</MenuItem>
+                <MenuItem value="HOLD">Hold</MenuItem>
+                <MenuItem value="REJECT">Reject</MenuItem>
+              </Select>
+            </Stack>
+
+            {/* Strengths */}
+            <TextField
+              label="Candidate Strengths"
+              multiline
+              rows={3}
+              fullWidth
+              value={feedback.strength}
+              onChange={(e) =>
+                setFeedback({
+                  ...feedback,
+                  strength: e.target.value,
+                })
+              }
+            />
+
+            {/* Weakness */}
+            <TextField
+              label="Areas for Improvement"
+              multiline
+              rows={3}
+              fullWidth
+              value={feedback.weakness}
+              onChange={(e) =>
+                setFeedback({
+                  ...feedback,
+                  weakness: e.target.value,
+                })
+              }
+            />
+
+            {/* Remarks */}
+            <TextField
+              label="Additional Notes"
+              multiline
+              rows={3}
+              fullWidth
+              value={feedback.remark}
+              onChange={(e) =>
+                setFeedback({
+                  ...feedback,
+                  remark: e.target.value,
+                })
+              }
+            />
+          </Stack>
+        </DialogContent>
+
+        <DialogActions>
+          <Button onClick={() => setFeedbackDialog(null)}>Cancel</Button>
+
+          <Button
+            variant="contained"
+            disabled={feedbackSubmitting}
+            onClick={submitFeedback}
+          >
+            {feedbackSubmitting ? "Submitting..." : "Submit Feedback"}
           </Button>
         </DialogActions>
       </Dialog>

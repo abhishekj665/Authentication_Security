@@ -2,7 +2,7 @@ import { API } from "../AuthService/authService";
 
 export const getAllJobPosts = async () => {
   try {
-    const response = await API.get("/recuirment/job-posts");
+    const response = await API.get("/recruitment/job-posts");
     return response.data;
   } catch (error) {
     return {
@@ -14,7 +14,7 @@ export const getAllJobPosts = async () => {
 
 export const getJobPost = async (id) => {
   try {
-    const response = await API.get(`/recuirment/job-post/${id}`);
+    const response = await API.get(`/recruitment/job-post/${id}`);
     return response.data;
   } catch (error) {
     return {
@@ -26,7 +26,7 @@ export const getJobPost = async (id) => {
 
 export const updateJobPost = async (id, data) => {
   try {
-    const response = await API.patch(`/recuirment/job-post/${id}`, data);
+    const response = await API.patch(`/recruitment/job-post/${id}`, data);
     return response.data;
   } catch (error) {
     return {

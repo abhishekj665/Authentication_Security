@@ -1,5 +1,5 @@
 import { successResponse, errorResponse } from "../../utils/response.utils.js";
-import * as JobPostingService from "../../services/recuirment/jobPosting.service.js";
+import * as JobPostingService from "../../services/recruitment/jobPosting.service.js";
 import STATUS from "../../constants/Status.js";
 
 export const updateJobPosting = async (req, res, next) => {

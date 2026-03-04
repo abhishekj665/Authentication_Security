@@ -2,7 +2,7 @@ import { API } from "../AuthService/authService";
 
 export const getCandidate = async (email) => {
   try {
-    const response = await API.get("/recuirment/candidate/get-by-email", {
+    const response = await API.get("/recruitment/candidate/get-by-email", {
       params: { email },
     });
     console.log("Candidate response:", response.data);

@@ -1,4 +1,4 @@
-import * as ApplicationService from "../../services/recuirment/application.service.js";
+import * as ApplicationService from "../../services/recruitment/application.service.js";
 import { successResponse, errorResponse } from "../../utils/response.utils.js";
 import cloudinary from "../../config/cloudinary.js";
 import fs from "fs";

@@ -72,7 +72,10 @@ import { useNavigate } from "react-router-dom";
 import { getApplications } from "../../services/CareersService/appllicationService";
 import { getAllJobPosts } from "../../services/CareersService/jobPostService";
 import { getApplicationById } from "../../services/CareersService/appllicationService";
+import { generateOffer } from "../../services/CareersService/offerService";
+import { getManagers } from "../../services/AdminService/managerService";
 import { toast } from "react-toastify";
+import { Alert } from "@mui/material";
 
 import {
   getInterviewers,
@@ -432,6 +435,27 @@ function ApplicationDetailDrawer({
     }
   };
 
+  const [selectedManager, setSelectedManager] = useState(null);
+  const [managers, setManagers] = useState([]);
+
+  const handleGenerateOffer = async () => {
+    try {
+      const res = await generateOffer(application.id, {
+        managerId: selectedManager,
+      });
+
+      if (res.success) {
+        toast.success("Offer generated successfully");
+        refreshList();
+        onClose();
+      } else {
+        toast.error(res.message);
+      }
+    } catch (err) {
+      toast.error(err.message);
+    }
+  };
+
   const handleReject = async () => {
     try {
       const res = await rejectApplication(application.id);
@@ -461,17 +485,40 @@ function ApplicationDetailDrawer({
   const currentStage = application?.currentStage?.name?.toUpperCase() || "";
   const status = application?.status?.toUpperCase() || "";
 
-  const isRejectedStage = currentStage === "REJECTED";
+  const showOfferGeneration =
+    currentStage === "SELECTED" && status !== "OFFERED";
+
+  const isRejected = status === "REJECTED";
   const isShortlisted = currentStage === "SHORTLISTED";
   const isApplied = currentStage === "APPLIED";
   const isInterview = currentStage === "INTERVIEW";
-  const isFinalStatus = status === "OFFERED" || status === "HIRED";
+  const isFinalStatus =
+    status === "OFFERED" || status === "HIRED" || status === "REJECTED";
+  const isSelected = currentStage === "SELECTED";
+  const isOffered = status === "OFFERED";
+  const isHired = status === "HIRED";
+
+  const canScheduleInterview =
+    currentStage === "SHORTLISTED" ||
+    currentStage === "TECHNICAL ROUND" ||
+    currentStage === "HR ROUND";
 
   useEffect(() => {
     if (open) {
       setTab(0);
     }
   }, [open, application?.id]);
+
+  useEffect(() => {
+    if (!open) return;
+
+    const fetchManagers = async () => {
+      const res = await getManagers();
+      if (res?.success) setManagers(res.data);
+    };
+
+    fetchManagers();
+  }, [open]);
 
   if (!application) {
     return (
@@ -511,19 +558,66 @@ function ApplicationDetailDrawer({
     >
       <Stack spacing={3}>
         {/* Header */}
-        <Stack direction="row" justifyContent="space-between">
-          <Typography variant="h5">Application Details</Typography>
+        <Stack spacing={2}>
+          <Stack
+            direction="row"
+            justifyContent="space-between"
+            alignItems="center"
+          >
+            <Typography variant="h5">Application Details</Typography>
+            <Chip label={application.status} />
+          </Stack>
 
-          <Chip label={application.status} />
+          <Stack
+            direction={{ xs: "column", sm: "row" }}
+            spacing={1}
+            flexWrap="wrap"
+          >
+            <Chip
+              label="Applied"
+              color={currentStage === "APPLIED" ? "primary" : "default"}
+            />
+
+            <Chip
+              label="Shortlisted"
+              color={currentStage === "SHORTLISTED" ? "primary" : "default"}
+            />
+
+            <Chip
+              label="Technical"
+              color={currentStage === "TECHNICAL ROUND" ? "primary" : "default"}
+            />
+
+            <Chip
+              label="HR"
+              color={currentStage === "HR ROUND" ? "primary" : "default"}
+            />
+
+            <Chip
+              label="Selected"
+              color={currentStage === "SELECTED" ? "primary" : "default"}
+            />
+
+            <Chip
+              label="Offer"
+              color={status === "OFFERED" ? "success" : "default"}
+            />
+          </Stack>
         </Stack>
 
         <Divider />
 
         {/* Tabs */}
-        <Tabs value={tab} onChange={(e, v) => setTab(v)}>
+        <Tabs
+          value={tab}
+          onChange={(e, v) => setTab(v)}
+          variant="scrollable"
+          scrollButtons="auto"
+          allowScrollButtonsMobile
+        >
           <Tab label="Job Details" />
           <Tab label="Candidate Details" />
-          <Tab label="Interview Setup" />
+          {canScheduleInterview && <Tab label="Interview Setup" />}
         </Tabs>
 
         {/* TAB 1 — JOB */}
@@ -708,7 +802,7 @@ function ApplicationDetailDrawer({
               <Stack direction="row" spacing={2}>
                 {isFinalStatus && <Chip label={status} color="default" />}
 
-                {!isFinalStatus && isRejectedStage && (
+                {!isFinalStatus && isRejected && (
                   <Chip label="Rejected" color="error" icon={<Cancel />} />
                 )}
 
@@ -784,6 +878,106 @@ function ApplicationDetailDrawer({
                   </Button>
                 )}
               </Stack>
+
+              {showOfferGeneration && (
+                <Card
+                  variant="outlined"
+                  sx={{
+                    mt: 3,
+                    p: 3,
+                    borderRadius: 3,
+                    border: "1px dashed #d0d7de",
+                    background: "#fafafa",
+                  }}
+                >
+                  <Stack spacing={3}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <WorkHistory color="primary" />
+                      <Typography variant="h6">Offer Preparation</Typography>
+                    </Stack>
+
+                    <Typography variant="body2" color="text.secondary">
+                      The candidate has successfully cleared all interview
+                      rounds. Please assign a reporting manager before
+                      generating the offer.
+                    </Typography>
+
+                    <Autocomplete
+                      options={managers}
+                      getOptionLabel={(option) => option?.email || ""}
+                      onChange={(e, value) =>
+                        setSelectedManager(value?.id || null)
+                      }
+                      renderInput={(params) => (
+                        <TextField
+                          {...params}
+                          label="Assign Reporting Manager"
+                        />
+                      )}
+                    />
+
+                    <Button
+                      variant="contained"
+                      startIcon={<CheckCircle />}
+                      disabled={!selectedManager}
+                      onClick={handleGenerateOffer}
+                      sx={{
+                        borderRadius: "999px",
+                        width: 200,
+                        textTransform: "none",
+                      }}
+                    >
+                      Generate Offer
+                    </Button>
+                  </Stack>
+                </Card>
+              )}
+
+              {isOffered && (
+                <Card
+                  variant="outlined"
+                  sx={{
+                    mt: 3,
+                    p: 3,
+                    borderRadius: 3,
+                    border: "1px solid #b7eb8f",
+                    background: "#f6fffa",
+                  }}
+                >
+                  <Stack spacing={2}>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <CheckCircle color="success" />
+                      <Typography variant="h6">Offer Generated</Typography>
+                    </Stack>
+
+                    <Typography variant="body2" color="text.secondary">
+                      The offer letter has already been generated for this
+                      candidate.
+                    </Typography>
+
+                    <Stack direction="row" spacing={2}>
+                      <Chip
+                        icon={<WorkHistory />}
+                        label="Offer Stage"
+                        color="success"
+                      />
+
+                      <Chip
+                        icon={<Business />}
+                        label={`Manager: ${application.assignedManager?.email || "Assigned"}`}
+                        color="info"
+                      />
+                    </Stack>
+                  </Stack>
+                </Card>
+              )}
+
+              {isRejected && (
+                <Alert severity="error" sx={{ mt: 2 }}>
+                  This application has been rejected. Interview scheduling is
+                  disabled.
+                </Alert>
+              )}
             </Card>
 
             {/* Resume Preview */}
@@ -813,7 +1007,7 @@ function ApplicationDetailDrawer({
         )}
 
         {/* TAB 3 — INTERVIEW */}
-        {tab === 2 && (
+        {tab === 2 && canScheduleInterview && (
           <InterviewTab
             application={application}
             interviewers={interviewers}
@@ -870,6 +1064,13 @@ function InterviewTab({ application, interviewers, refreshList, onClose }) {
   const handleSave = async () => {
     if (!form.date || !form.time || !form.interviewerId) {
       toast.error("Please select date, time and interviewer");
+      return;
+    }
+
+    const interviewTime = dayjs(`${form.date} ${form.time}`);
+
+    if (interviewTime.isBefore(dayjs())) {
+      toast.error("Interview must be scheduled in the future");
       return;
     }
 
