@@ -1,27 +1,29 @@
-import puppeteer from "puppeteer";
 import cloudinary from "../config/cloudinary.js";
-
-const browser = await puppeteer.launch({
-  headless: "new",
-  args: ["--no-sandbox", "--disable-setuid-sandbox"],
-});
+import chromium from "@sparticuz/chromium";
+import puppeteer from "puppeteer-core";
 
 export const generatePDF = async (html) => {
-  const browser = await puppeteer.launch();
-  const page = await browser.newPage();
-
-  await page.setContent(html, { waitUntil: "networkidle0" });
-
-  const pdfBuffer = await page.pdf({
-    format: "A4",
-    printBackground: true,
+  const browser = await puppeteer.launch({
+    args: chromium.args,
+    executablePath: await chromium.executablePath(),
+    headless: chromium.headless,
   });
 
-  await browser.close();
+  try {
+    const page = await browser.newPage();
 
-  return pdfBuffer;
+    await page.setContent(html, { waitUntil: "networkidle0" });
+
+    const pdfBuffer = await page.pdf({
+      format: "A4",
+      printBackground: true,
+    });
+
+    return pdfBuffer;
+  } finally {
+    await browser.close();
+  }
 };
-
 export const uploadPDF = async (buffer) => {
   return new Promise((resolve, reject) => {
     cloudinary.uploader
