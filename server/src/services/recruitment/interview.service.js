@@ -354,7 +354,12 @@ export const confirmInterview = async (id) => {
 
     const application = interview.application;
 
-    if (nextStage && !nextStage.isFinal && !nextStage.isOfferStage) {
+    if (
+      interview.application.currentStage.stageOrder === 2 &&
+      nextStage &&
+      !nextStage.isFinal &&
+      !nextStage.isOfferStage
+    ) {
       await application.update(
         { currentStageId: nextStage.id },
         { transaction },
@@ -374,6 +379,25 @@ export const confirmInterview = async (id) => {
         { transaction },
       );
     }
+
+    const alreadyConfirmed = await Interview.findOne({
+      where: {
+        applicationId: interview.applicationId,
+        roundName: interview.roundName,
+        status: "SCHEDULED",
+        id: { [Op.ne]: interview.id },
+      },
+      transaction,
+      lock: true,
+    });
+
+    if (alreadyConfirmed) {
+      throw new ExpressError(
+        STATUS.BAD_REQUEST,
+        "An interview for this stage is already confirmed for this candidate",
+      );
+    }
+
     await interview.update({ status: "SCHEDULED" }, { transaction });
 
     await transaction.commit();
@@ -387,7 +411,7 @@ export const confirmInterview = async (id) => {
       interviewDate: dayjs(interview.scheduledAt).format("DD MMM YYYY"),
       interviewTime: dayjs(interview.scheduledAt).format("hh:mm A"),
       duration: interview.duration,
-      roundName: nextStage?.name || interview.application.currentStage.name,
+      roundName: interview.roundName,
       mode: interview.mode,
       meetingLink: interview.meetingUrl,
       location: interview.location,
