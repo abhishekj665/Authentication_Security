@@ -2290,7 +2290,7 @@ export const offerLetterTemplate = ({ application, offer }) => {
   <h1>OFFER LETTER</h1>
 
   <div class="ref">
-  <p><strong>Ref No:</strong> ORV/HR/${Math.floor(Math.random()*10000)}</p>
+  <p><strong>Ref No:</strong> ORV/HR/${Math.floor(Math.random() * 10000)}</p>
   <p><strong>Date:</strong> ${new Date().toLocaleDateString()}</p>
   </div>
 
@@ -2418,6 +2418,7 @@ export const offerEmailTemplate = ({
   jobTitle,
   companyName,
   joiningDate,
+  offerUrl,
 }) => {
   return `
   <div style="font-family: Arial, Helvetica, sans-serif; line-height: 1.6; color: #333;">
@@ -2425,7 +2426,7 @@ export const offerEmailTemplate = ({
     <p>Dear ${candidateName},</p>
 
     <p>
-      <strong>Congratulations!</strong>🎉
+      <strong>Congratulations!</strong> 🎉
     </p>
 
     <p>
@@ -2444,8 +2445,32 @@ export const offerEmailTemplate = ({
     </p>
 
     <p>
-      Kindly review the offer letter carefully. To confirm your acceptance, please sign 
-      the document and share the signed copy with us at the earliest.
+      To review the offer and confirm your acceptance, please click the button below:
+    </p>
+
+    <div style="margin: 25px 0;">
+      <a 
+        href="${offerUrl}" 
+        style="
+          background-color: #1976d2;
+          color: #ffffff;
+          padding: 12px 24px;
+          text-decoration: none;
+          border-radius: 6px;
+          font-weight: bold;
+          display: inline-block;
+        "
+      >
+        Click URL to Confirm Offer
+      </a>
+    </div>
+
+    <p style="font-size: 14px; color: #666;">
+      If the button above does not work, copy and paste the following link into your browser:
+    </p>
+
+    <p style="word-break: break-all; font-size: 14px;">
+      ${offerUrl}
     </p>
 
     ${

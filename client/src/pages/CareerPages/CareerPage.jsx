@@ -1,6 +1,6 @@
 import { Container, Typography, Box, Button } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { getAllJobs } from "../../services/CareersService/jobsService";
+import { getAllJobs } from "../../services/JobRecruitmentService/jobsService";
 import { toast } from "react-toastify";
 import { useEffect } from "react";
 import { useState } from "react";

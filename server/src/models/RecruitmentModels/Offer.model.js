@@ -1,4 +1,3 @@
-
 import { sequelize } from "../../config/db.js";
 import { DataTypes } from "sequelize";
 
@@ -61,6 +60,19 @@ const Offer = sequelize.define(
       type: DataTypes.DATE,
       allowNull: true,
     },
+    token: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    tokenUsed: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    expiresAt: {
+      type: DataTypes.DATE,
+      allowNull: false,
+    },
     respondedAt: {
       type: DataTypes.DATE,
       allowNull: true,
@@ -74,4 +86,3 @@ const Offer = sequelize.define(
 );
 
 export default Offer;
-

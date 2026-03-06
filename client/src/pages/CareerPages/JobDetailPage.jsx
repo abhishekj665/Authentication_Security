@@ -3,12 +3,11 @@ import { useState } from "react";
 
 import { Container, Typography, Button, Divider } from "@mui/material";
 import { useNavigate } from "react-router-dom";
-import { getJobDetail } from "../../services/CareersService/jobsService";
+import { getJobDetail } from "../../services/JobRecruitmentService/jobsService";
 import { useEffect } from "react";
 
 export default function JobDetailPage() {
   const { slug } = useParams();
-  const [open, setOpen] = useState(false);
   const [job, setJob] = useState({});
 
   const isExpired = job?.expiresAt && new Date(job.expiresAt) < new Date();

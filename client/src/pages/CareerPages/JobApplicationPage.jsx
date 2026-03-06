@@ -15,9 +15,9 @@ import {
 import { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Snackbar, Alert } from "@mui/material";
-import { registerJobApplication } from "../../services/CareersService/appllicationService";
+import { registerJobApplication } from "../../services/JobRecruitmentService/appllicationService";
 import { useEffect } from "react";
-import { getCandidate } from "../../services/CareersService/candidateService";
+import { getCandidate } from "../../services/JobRecruitmentService/candidateService";
 
 const steps = [
   "Information",

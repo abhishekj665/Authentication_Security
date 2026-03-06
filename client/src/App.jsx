@@ -1,5 +1,5 @@
 import HomePage from "./pages/UserPages/UserLayoutPage";
-import AdminUserPage from "./pages/AdminPages/AdminUserPage";
+import AdminUserPage from "./pages/AdminPages/User/AdminUserPage";
 import SignUpPage from "./pages/Auth/SignupPage";
 import LogInPage from "./pages/Auth/LoginPage";
 
@@ -7,45 +7,46 @@ import "./App.css";
 import { ToastContainer } from "react-toastify";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import AdminLayoutPage from "./pages/AdminPages/AdminLayoutPage";
-import AdminIps from "./pages/AdminPages/AdminIp";
+import AdminIps from "./pages/AdminPages/IP/AdminIp";
 import UserAssetPage from "./pages/UserPages/UserAssetPage";
-import AdminRequest from "./pages/AdminPages/AdminRequest";
-import ExpensesPage from "./pages/AdminPages/ExpensesPage";
-import ManagerPage from "./pages/AdminPages/AdminManagerPage";
-import ManagerAsset from "./pages/ManagerPages/ManagerAssetPage";
+import AdminRequest from "./pages/AdminPages/AssetPage/AdminRequest";
+import ExpensesPage from "./pages/AdminPages/Expense/ExpensesPage";
+import ManagerPage from "./pages/AdminPages/Manager/AdminManagerPage";
+import ManagerAsset from "./pages/ManagerPages/AssetPage/ManagerAssetPage";
 
 import "@fontsource/roboto/300.css";
 import "@fontsource/roboto/400.css";
 import "@fontsource/roboto/500.css";
 import "@fontsource/roboto/700.css";
-import AdminAsset from "./pages/AdminPages/AdminAsset";
+import AdminAsset from "./pages/AdminPages/AssetPage/AdminAsset";
 import UserExpensePage from "./pages/UserPages/UserExpensePage";
-import ManagerExpensesPage from "./pages/ManagerPages/ManagerExpenses";
+import ManagerExpensesPage from "./pages/ManagerPages/Expense/ManagerExpenses";
 import ManagerLayout from "./pages/ManagerPages/ManagerLayoutPage";
-import ManagerUserPage from "./pages/ManagerPages/ManagerUserPage";
-import ManagerAssetRequest from "./pages/ManagerPages/ManagerRequest";
+import ManagerUserPage from "./pages/ManagerPages/User/ManagerUserPage";
+import ManagerAssetRequest from "./pages/ManagerPages/AssetPage/ManagerRequest";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { fetchUser } from "./redux/auth/authThunk";
-import AttendancePolicy from "./pages/AdminPages/AttendancePolicy";
-import AttendanceTable from "./pages/AdminPages/AttendanceDataPage";
-import AttendanceData from "./pages/ManagerPages/AttendanceRequestPage";
+import AttendancePolicy from "./pages/AdminPages/Attendance/AttendancePolicy";
+import AttendanceTable from "./pages/AdminPages/Attendance/AttendanceDataPage";
+import AttendanceData from "./pages/ManagerPages/Attendance/AttendanceRequestPage";
 import UserAttendanceData from "./pages/UserPages/AttendanceData";
-import ManagerAttendancePage from "./pages/ManagerPages/ManagerAttendancePage";
+import ManagerAttendancePage from "./pages/ManagerPages/Attendance/ManagerAttendancePage";
 import LeaveManagement from "./pages/UserPages/LeaveManagementPage";
-import ManagerLeaveManagement from "./pages/ManagerPages/ManagerLeaveManagement";
-import ManagerLeaveDashboard from "./pages/ManagerPages/ManagerLeaveDashboard";
-import AdminLeaveDashboard from "./pages/AdminPages/AdminLeaveDashboard";
-import AdminLeavePolicyPage from "./pages/AdminPages/LeavePolicyPage";
-import LeaveTypePage from "./pages/AdminPages/LeaveTypePage";
+import ManagerLeaveManagement from "./pages/ManagerPages/LeaveManagement/ManagerLeaveManagement";
+import ManagerLeaveDashboard from "./pages/ManagerPages/LeaveManagement/ManagerLeaveDashboard";
+import AdminLeaveDashboard from "./pages/AdminPages/LeaveManagement/AdminLeaveDashboard";
+import AdminLeavePolicyPage from "./pages/AdminPages/LeaveManagement/LeavePolicyPage";
+import LeaveTypePage from "./pages/AdminPages/LeaveManagement/LeaveTypePage";
 import CareersPage from "./pages/CareerPages/CareerPage";
 import JobDetailPage from "./pages/CareerPages/JobDetailPage";
 import JobApplicationPage from "./pages/CareerPages/JobApplicationPage";
-import ManagerRequisitionPage from "./pages/ManagerPages/JobRequistionPage";
-import AdminRequisitionPage from "./pages/AdminPages/AdminRequistionPage";
-import AdminJobPostsPage from "./pages/AdminPages/AdminJobPostsPage";
-import AdminJobApplicationsPage from "./pages/AdminPages/JobApplicationPage";
-import ManagerInterviewsPage from "./pages/ManagerPages/interviewPage";
+import ManagerRequisitionPage from "./pages/ManagerPages/JobRecruitment/JobRequistionPage";
+import AdminRequisitionPage from "./pages/AdminPages/Recruitment/AdminRequistionPage";
+import AdminJobPostsPage from "./pages/AdminPages/Recruitment/AdminJobPostsPage";
+import AdminJobApplicationsPage from "./pages/AdminPages/Recruitment/JobApplicationPage";
+import ManagerInterviewsPage from "./pages/ManagerPages/JobRecruitment/interviewPage";
+import { OfferPage } from "./pages/CareerPages/OfferPage";
 
 function App() {
   const dispatch = useDispatch();
@@ -105,9 +106,12 @@ function App() {
             <Route path="interviews" element={<ManagerInterviewsPage />} />
           </Route>
 
+          <Route path="/offer/:token" element={<OfferPage />} />
+
           <Route path="/careers" element={<CareersPage />}></Route>
           <Route path="/careers/:slug" element={<JobDetailPage />} />
           <Route path="/careers/:slug/apply" element={<JobApplicationPage />} />
+
           <Route path="/" element={<SignUpPage />}></Route>
           <Route path="*" element={<div>404 Not Found</div>} />
         </Routes>

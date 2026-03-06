@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import { toast } from "react-toastify";
 import LanguageIcon from "@mui/icons-material/Language";
-import Hero from "../../components/Hero";
+import Hero from "../../components/Hero/Hero";
 import { registerUser } from "../../redux/auth/authThunk";
 import { useDispatch } from "react-redux";
 import { verify } from "../../services/AuthService/authService";

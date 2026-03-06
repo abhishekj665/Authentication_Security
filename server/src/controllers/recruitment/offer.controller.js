@@ -17,3 +17,17 @@ export const createOffer = async (req, res, next) => {
     next(error);
   }
 };
+
+export const validateOfferToken = async (req, res, next) => {
+  try {
+    const response = await OfferService.validateOfferToken(req.params.token); 
+    if (response.success) {
+      return successResponse(res, response.data, response.message);
+    } else {
+      return errorResponse(res, response.message, response.status);
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+

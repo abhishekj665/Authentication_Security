@@ -6,5 +6,6 @@ import * as OfferController from "../../controllers/recruitment/offer.controller
 const Router = express.Router();
 
 Router.post("/offer/generate/:id", adminAuth, OfferController.createOffer);
+Router.post("/offer/accept/:token", OfferController.validateOfferToken);
 
 export const OfferRoute = Router;

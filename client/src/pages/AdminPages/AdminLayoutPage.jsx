@@ -1,9 +1,8 @@
-import Sidebar from "../../components/SideBar";
+import Sidebar from "../../components/AdminDashboard/SideBar";
 import Topbar from "../../components/TopBar";
 import { Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import { useState, useEffect } from "react";
 
 export default function AdminLayout() {

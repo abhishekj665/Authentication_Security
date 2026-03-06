@@ -13,7 +13,7 @@ import {
 } from "@mui/material";
 import LanguageIcon from "@mui/icons-material/Language";
 import { toast } from "react-toastify";
-import Hero from "../../components/Hero";
+import Hero from "../../components/Hero/Hero";
 import { useDispatch } from "react-redux";
 import { loginUser } from "../../redux/auth/authThunk";
 import { verify } from "../../services/AuthService/authService";
@@ -64,7 +64,7 @@ function LoginPage() {
           toast.success(response.message);
           resetData();
         } else if (response?.user?.role === "manager") {
-          navigate("/manager/dashboard");
+          navigate("/manager/dashboard/users");
           toast.success("Welcome");
           resetData();
         } else {

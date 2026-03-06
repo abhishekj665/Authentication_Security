@@ -1,9 +1,8 @@
-import ManagerSidebar from "./ManagerSideBar";
+import ManagerSidebar from "../../components/ManagerDashboard/ManagerSideBar";
 import Topbar from "../../components/TopBar";
 import { Outlet } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
 import { useSelector } from "react-redux";
 
 export default function ManagerLayout() {
