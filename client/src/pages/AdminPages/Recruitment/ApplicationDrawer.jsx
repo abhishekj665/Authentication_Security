@@ -57,6 +57,8 @@ import { getInterviewers } from "../../../services/JobRecruitmentService/intervi
 
 import { moveToNextStage } from "../../../services/JobRecruitmentService/stageService";
 
+import InterviewTab from "./InterviewTab";
+
 export default function ApplicationDetailDrawer({
   open,
   onClose,

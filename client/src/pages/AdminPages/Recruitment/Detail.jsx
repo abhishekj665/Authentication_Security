@@ -1,5 +1,6 @@
 import { Box, Stack, Typography } from "@mui/material";
 
+
 export default function DetailRow({ icon, label, value }) {
   return (
     <Stack direction="row" spacing={2} alignItems="center" mb={2}>

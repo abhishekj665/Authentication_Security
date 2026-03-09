@@ -36,6 +36,8 @@ import { toast } from "react-toastify";
 
 import ApplicationDetailDrawer from "./ApplicationDrawer";
 
+
+
 export default function AdminApplicationsPage() {
   const [rows, setRows] = useState([]);
   const [totalRows, setTotalRows] = useState(0);
