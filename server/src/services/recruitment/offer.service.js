@@ -259,20 +259,6 @@ export const validateOfferToken = async (token) => {
     const password = "Welcome@123";
     const hashPassword = await generateHash(password);
 
-    await ApplicationStageLog.create(
-      {
-        applicationId: offer.applicationId,
-        changedByType: "CANDIDATE",
-        oldStatus: offer.application.currentStage.name,
-        newStatus: "HIRED",
-        fromStageId: offer.application.currentStage.id,
-        toStageId: offer.application.currentStage.id,
-        changedBy: newUser.id,
-        changedByType: "CANDIDATE",
-      },
-      { transaction },
-    );
-
     const existingUser = await User.findOne({
       where: { email: offer.application.candidate.email },
       transaction,
@@ -306,6 +292,20 @@ export const validateOfferToken = async (token) => {
         password: hashPassword,
         role: "user",
         isVerified: true,
+      },
+      { transaction },
+    );
+
+    await ApplicationStageLog.create(
+      {
+        applicationId: offer.applicationId,
+        changedByType: "CANDIDATE",
+        oldStatus: offer.application.currentStage.name,
+        newStatus: "HIRED",
+        fromStageId: offer.application.currentStage.id,
+        toStageId: offer.application.currentStage.id,
+        changedBy: newUser.id,
+        changedByType: "CANDIDATE",
       },
       { transaction },
     );
