@@ -179,7 +179,7 @@ export const validateOfferToken = async (token) => {
               include: [
                 {
                   model: JobRequisition,
-                  as: "jobRequisition",
+                  as: "requisition",
                   attributes: ["id", "title", "headCount", "departmentId"],
                 },
               ],
