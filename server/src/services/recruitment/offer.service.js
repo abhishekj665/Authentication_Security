@@ -44,20 +44,20 @@ export const createOffer = async (applicationId, data, userId) => {
     });
 
     if (!application) {
-      throw new ExpressError("Application not found", STATUS.NOT_FOUND);
+      throw new ExpressError(STATUS.NOT_FOUND, "Application not found");
     }
 
     if (data.offeredCTC <= 0) {
       throw new ExpressError(
-        "Offered CTC must be greater than 0",
         STATUS.BAD_REQUEST,
+        "Offered CTC must be greater than 0",
       );
     }
 
     if (data.joiningDate && new Date(data.joiningDate) < new Date()) {
       throw new ExpressError(
-        "Joining date cannot be in the past",
         STATUS.BAD_REQUEST,
+        "Joining date cannot be in the past",
       );
     }
 
@@ -200,24 +200,24 @@ export const validateOfferToken = async (token) => {
     });
 
     if (!offer) {
-      throw new ExpressError("Invalid token", STATUS.BAD_REQUEST);
+      throw new ExpressError(STATUS.BAD_REQUEST, "Invalid token");
     }
 
     if (offer.tokenUsed) {
       throw new ExpressError(
-        "Response Already Taken for this Job Offer",
         STATUS.BAD_REQUEST,
+        "Response Already Taken for this Job Offer",
       );
     }
 
     if (offer.expiresAt < new Date()) {
-      throw new ExpressError("Offer has expired", STATUS.BAD_REQUEST);
+      throw new ExpressError(STATUS.BAD_REQUEST, "Offer has expired");
     }
 
     if (offer.approvalStatus !== "PENDING") {
       throw new ExpressError(
-        "Offer has already been processed",
         STATUS.BAD_REQUEST,
+        "Offer has already been processed",
       );
     }
 
@@ -274,11 +274,14 @@ export const validateOfferToken = async (token) => {
         { transaction },
       );
 
-      await transaction.commit();
+      // await transaction.commit();
+
+      console.log("Existing user updated with new role and password");
 
       return {
         success: true,
         message: "Offer accepted successfully",
+
         data: {
           email: offer.application.candidate.email,
           password: "Existing user, please use your credentials",
@@ -310,7 +313,7 @@ export const validateOfferToken = async (token) => {
       { transaction },
     );
 
-    await transaction.commit();
+    // await transaction.commit();
 
     return {
       success: true,
