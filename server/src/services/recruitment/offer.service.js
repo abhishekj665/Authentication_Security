@@ -274,7 +274,7 @@ export const validateOfferToken = async (token) => {
         { transaction },
       );
 
-      // await transaction.commit();
+      await transaction.commit();
 
       console.log("Existing user updated with new role and password");
 
@@ -313,7 +313,7 @@ export const validateOfferToken = async (token) => {
       { transaction },
     );
 
-    // await transaction.commit();
+    await transaction.commit();
 
     return {
       success: true,
